@@ -164,6 +164,61 @@ test('translate="no", .notranslate, [hidden] and aria-hidden are respected', () 
   assert.deepStrictEqual(Array.from(segments[0].texts), ['Ezt kell lefordítani']);
 });
 
+/* The bug these three cover made the extension look completely broken: on a
+   site whose <html> carries translate="no", the walker refused to descend past
+   the root, collected nothing, and the extension reported "Translated" without
+   having touched a word. A site-wide opt-out is aimed at a browser's own
+   translation bar; a reader who installed a translator and asked for the page
+   outranks it. The same attribute deeper in the tree is a local instruction
+   and still stands. */
+test('a whole-page translate="no" does not block translation', () => {
+  const body = el('body', null, el('p', null, 'Kiváló minőségű termékek kedvező áron'));
+  const html = el('html', { lang: 'hu-HU', translate: 'no', class: 'notranslate' }, body);
+
+  assert.strictEqual(HUEN.tags.isInSkippedTree(body), false,
+    'the body of an opted-out document must still be walked');
+  const { segments } = collect(body);
+  assert.strictEqual(segments.length, 1);
+  assert.deepStrictEqual(Array.from(segments[0].texts),
+    ['Kiváló minőségű termékek kedvező áron']);
+  assert.ok(html, 'the root is what carried the opt-out');
+});
+
+test('a whole-page .notranslate class alone does not block translation either', () => {
+  const body = el('body', { class: 'notranslate' },
+    el('p', null, 'A szállítás ingyenes minden megrendelés esetén'));
+  el('html', { lang: 'hu' }, body);
+
+  assert.strictEqual(collect(body).segments.length, 1);
+});
+
+test('aria-hidden on the body, as set while a modal is open, does not block it', () => {
+  const body = el('body', { 'aria-hidden': 'true' },
+    el('p', null, 'Az oldal használatával elfogadja a süti szabályzatunkat'));
+  el('html', { lang: 'hu' }, body);
+
+  assert.strictEqual(collect(body).segments.length, 1);
+});
+
+test('a contenteditable body is still left alone, because it is an editor', () => {
+  const body = el('body', null, el('p', null, 'A felhasználó által írt szöveg'));
+  body.isContentEditable = true;
+  el('html', { lang: 'hu' }, body);
+
+  assert.strictEqual(HUEN.tags.isSkipped(body), true);
+  assert.strictEqual(HUEN.tags.isInSkippedTree(body), true);
+});
+
+test('translate="no" below the root is still obeyed inside an opted-out page', () => {
+  const keep = el('p', { translate: 'no' }, 'GymBeam Protein 1000 g');
+  const body = el('body', null, keep, el('p', null, 'Ezt kell lefordítani'));
+  el('html', { translate: 'no' }, body);
+
+  const { segments } = collect(body);
+  assert.strictEqual(segments.length, 1, 'the opted-out paragraph stays Hungarian');
+  assert.deepStrictEqual(Array.from(segments[0].texts), ['Ezt kell lefordítani']);
+});
+
 test('contenteditable regions are left alone', () => {
   const editable = el('div', null, 'A felhasználó által írt szöveg');
   editable.isContentEditable = true;

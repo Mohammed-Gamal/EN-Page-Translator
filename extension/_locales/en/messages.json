@@ -335,6 +335,10 @@
   "skippedUnknownLanguage": {
     "message": "“$1” is not a language this browser can translate."
   },
+  "skippedNoText": {
+    "message": "There was no text on this page to translate.",
+    "description": "Shown when the page walker found nothing translatable."
+  },
   "errorCloudUnconfigured": {
     "message": "No translation service is set up yet. Add one in the extension settings."
   },

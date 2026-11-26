@@ -335,6 +335,10 @@
   "skippedUnknownLanguage": {
     "message": "A(z) „$1” nem olyan nyelv, amelyet ez a böngésző le tud fordítani."
   },
+  "skippedNoText": {
+    "message": "Ezen az oldalon nem volt lefordítható szöveg.",
+    "description": "Shown when the page walker found nothing translatable."
+  },
   "errorCloudUnconfigured": {
     "message": "Még nincs beállítva fordítószolgáltatás. Add hozzá a kiegészítő beállításaiban."
   },

@@ -32,11 +32,38 @@
   /* input/button value text is user-visible only for these types. */
   const VALUE_TYPES = new Set(['button', 'submit', 'reset']);
 
+  /* <html> and <body> are the whole document, which changes what the markers
+     below can possibly mean.
+
+     On any ordinary element, `translate="no"`, `.notranslate`, `hidden`,
+     `aria-hidden` and `display: none` mark one part of a page as "not content
+     to translate", and the segmenter obeys them — a product code or a trade
+     name that must stay verbatim is exactly what they are for.
+
+     On the document element they cannot mean that, because there is no other
+     part: they can only mean "translate nothing at all". Sites set
+     `translate="no"` there to keep a browser's own translation bar — Google
+     Translate's in particular — from rewriting the page wholesale, and
+     gymbeam.hu ships `<html lang="hu-HU" translate="no" class="notranslate">`.
+     Honouring that made this extension look completely broken: the walker
+     refused to descend past <html>, collected nothing, and still reported
+     "Translated" having touched not one word. `aria-hidden="true"` on <body>
+     is the same trap by a different route — plenty of sites set it while a
+     cookie dialog is open, which is precisely when a reader arrives.
+
+     A reader who installed a translator and pointed it at this page outranks a
+     blanket flag aimed at a different tool, so these do not apply to the root.
+     What does still apply there is `contenteditable`, because a <body> the
+     reader types into is a real editor and rewriting their own words would be
+     destructive rather than merely unwanted. */
+  const WHOLE_DOCUMENT = new Set(['HTML', 'BODY']);
+
   function isSkipped(el) {
     if (SKIP.has(el.tagName)) return true;
+    if (el.isContentEditable) return true;
+    if (WHOLE_DOCUMENT.has(el.tagName)) return false;
     if (el.hasAttribute('hidden')) return true;
     if (el.getAttribute('aria-hidden') === 'true') return true;
-    if (el.isContentEditable) return true;
     if (el.getAttribute('translate') === 'no') return true;
     if (el.classList.contains('notranslate')) return true;
     // Our own injected UI, so a banner never translates itself.

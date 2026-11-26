@@ -40,6 +40,13 @@ If you change a file, press the reload arrow on the extension's card at
 or the manifest needs that reload; a change to a content script also needs the
 page reloading.
 
+**Leave Developer mode on.** Current Chrome keeps unpacked extensions loaded
+only while it is on: turn it off and the card stays listed but the extension is
+disabled, with no content script, no service worker and no popup that works.
+"It stopped doing anything" is nearly always this. The first thing to check
+when nothing happens is that the card at `chrome://extensions` says **On** and
+shows no **Errors** button.
+
 ### First run
 
 The very first time, Chrome has to download the Hungarian–English model. Chrome
@@ -68,6 +75,21 @@ loads, with no further prompts.
 
 The toolbar badge shows the state: `…` translating, `↓` downloading the model,
 `EN` done, `!` needs attention.
+
+### Sites that ask not to be translated
+
+Plenty of sites carry `translate="no"` or `class="notranslate"` on their
+`<html>` element — gymbeam.hu is one — to stop a browser's own translation bar
+from rewriting the page. **This extension ignores that flag when it covers the
+whole document**, because you installed a translator and pointed it at this
+page; a blanket opt-out aimed at Google Translate does not get to override you.
+
+The same markers *inside* the page are obeyed, which is what they are good
+for: a product code, a trade name or a snippet that must stay verbatim stays
+exactly as it was. `aria-hidden` and `hidden` work the same way — honoured on
+an element, ignored on `<html>` or `<body>`, where they would only ever mean
+"translate nothing". A `contenteditable` `<body>` is still left alone, because
+that is a real editor and rewriting what you typed would be destructive.
 
 ## How it works
 
@@ -333,6 +355,12 @@ be deleted without affecting anything.
 
 ## Known limitations
 
+- **Brave, and other Chromium browsers that strip the API, cannot translate
+  on-device at all.** Brave 158 has no `Translator` global in any context,
+  the extension's own offscreen document included, so there is nothing to
+  fall back to. Those browsers need a translation service configured under
+  **All settings** → **Translator**; the popup says so rather than blaming
+  the browser version.
 - **Desktop only.** Chrome's built-in AI APIs do not exist on mobile.
 - **Quality is NMT, not an LLM.** Chrome's model is a solid machine-translation
   model, roughly Google Translate quality. It is very good on ordinary prose and

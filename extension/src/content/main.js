@@ -390,7 +390,10 @@
         if (!root.isConnected) continue;
         if (collectAndQueue(root)) added = true;
       }
-      if (added) state.queue.run();
+      if (added) {
+        adoptTargetLanguage();
+        state.queue.run();
+      }
     }
 
     state.observer = new MutationObserver(function (mutations) {
@@ -428,6 +431,7 @@
     if (starting) return;
     if (state.active && !state.selectionOnly && state.queue && state.queue.isRunning) return;
     starting = true;
+    let found = false;
     try {
       setStatus(STATUS.CHECKING);
       if (!await ensureModel(!!userGesture)) return;
@@ -438,9 +442,12 @@
       setStatus(STATUS.TRANSLATING);
 
       if (!state.queue) state.queue = buildQueue();
-      adoptTargetLanguage();
 
-      collectAndQueue(document.body || document.documentElement);
+      found = collectAndQueue(document.body || document.documentElement);
+      /* Only once there is something to translate: a document still in
+         Hungarian must not claim `lang="en"`, which is what a screen reader
+         and the hyphenator go by. */
+      if (found) adoptTargetLanguage();
       startObserver();
       translateTitle();
     } finally {
@@ -448,7 +455,18 @@
     }
 
     await state.queue.run();
-    if (state.status === STATUS.TRANSLATING) setStatus(STATUS.DONE);
+    if (state.status !== STATUS.TRANSLATING) return;
+
+    /* "Translated", with nothing translated, is exactly how a whole-page
+       opt-out used to hide: the walker returned no segments, the queue had
+       nothing to run, and this line still reported success. If the page
+       yielded nothing, say so. */
+    if (!found && !applier.stats.nodes && !applier.stats.attrs) {
+      setStatus(STATUS.SKIPPED, t('skippedNoText',
+        'There was no text on this page to translate.'));
+      return;
+    }
+    setStatus(STATUS.DONE);
   }
 
   /* ---------- translating just what the reader selected ---------- */
