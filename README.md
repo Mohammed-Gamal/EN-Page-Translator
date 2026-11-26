@@ -236,6 +236,23 @@ back to a service only where it does not. That keeps the free, private,
 zero-setup path as the normal one, and means a browser without the built-in
 model is no longer a dead end.
 
+"Wherever it exists" means the API, not the downloaded model. On `auto` in
+Chrome, a language pair whose model is not on disk yet asks you for the
+one-time download — it does **not** quietly send the page to your service
+instead. That is deliberate: the free, local path stays the default, and a
+configured key is not spent behind your back. If you would rather have the
+better translation everywhere, including in Chrome, choose **Only a
+translation service**.
+
+Measured, with a key configured and a server standing in for DeepL on
+loopback:
+
+| Browser | `Translate with` | Engine used | Requests to the service |
+|---|---|---|---|
+| Brave 158 | `auto` | the service | the whole page |
+| Brave 158 | `Only a translation service` | the service | the whole page |
+| Chrome 158, model not yet downloaded | `auto` | the browser's own | none |
+
 The OpenAI-compatible option talks to anything speaking the chat-completions
 protocol: OpenAI, Groq, Together, OpenRouter, or a local Ollama or LM Studio
 server at `http://localhost:11434/v1`, which needs no key and keeps every word
@@ -360,7 +377,8 @@ be deleted without affecting anything.
   the extension's own offscreen document included, so there is nothing to
   fall back to. Those browsers need a translation service configured under
   **All settings** → **Translator**; the popup says so rather than blaming
-  the browser version.
+  the browser version. With a DeepL key set, Brave translates a whole page
+  correctly — verified, markers and inline markup included.
 - **Desktop only.** Chrome's built-in AI APIs do not exist on mobile.
 - **Quality is NMT, not an LLM.** Chrome's model is a solid machine-translation
   model, roughly Google Translate quality. It is very good on ordinary prose and
