@@ -1,0 +1,28 @@
+/* The only styles that touch the host page itself.
+
+   Everything the extension draws — the download prompt, the tooltip — now
+   lives in a shadow root built by overlay.js, so none of it needs defending
+   against the page's CSS here. What is left is one affordance: a hint that a
+   translated phrase has a Hungarian original behind it, shown on hover only.
+   Marking translated text permanently would deface every page the extension
+   touches. */
+
+[data-huen-src] {
+  /* Keeps the underline from shifting layout when it appears on hover. */
+  text-decoration-skip-ink: auto;
+}
+
+[data-huen-src]:hover {
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+  cursor: help;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-huen-src] {
+    transition: text-decoration-color 120ms ease;
+  }
+}

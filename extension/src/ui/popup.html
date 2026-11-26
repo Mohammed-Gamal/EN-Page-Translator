@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Magyar &rarr; English</title>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="head">
+    <!-- The wordmark is a product name, and the styled arrow is markup, so it
+         is deliberately not translated: textContent would flatten it. -->
+    <h1 class="wordmark">Magyar <i>&rarr;</i> English</h1>
+    <span id="engine" class="engine">
+      <span class="engine__dot"></span><span id="engine-text">checking</span>
+    </span>
+  </header>
+
+  <section class="state-block">
+    <p class="state">
+      <span id="state-dot" class="state__dot" data-tone="neutral"></span>
+      <span id="state-text">Looking at this page</span>
+    </p>
+    <p id="state-detail" class="detail" hidden></p>
+    <div id="meter" class="meter" hidden><div id="meter-fill" class="meter__fill"></div></div>
+  </section>
+
+  <section id="download" class="notice" hidden>
+    <p class="notice__text" data-i18n="popupDownloadBlurb">
+      Chrome keeps the language model on your own disk. It downloads once, then
+      works offline and costs nothing.
+    </p>
+    <button id="download-btn" class="btn btn--primary" type="button"
+      data-i18n="popupDownloadAction">Download the model</button>
+  </section>
+
+  <section class="actions">
+    <button id="translate" class="btn btn--primary" type="button"
+      data-i18n="popupTranslate">Translate page</button>
+    <button id="restore" class="btn" type="button"
+      data-i18n="popupRestore">Show original</button>
+  </section>
+
+  <section class="group">
+    <h2 class="label" data-i18n="popupWhenLabel">When to translate</h2>
+    <div id="mode" class="segmented" role="group" data-i18n-label="popupWhenLabel"
+      aria-label="When to translate">
+      <button type="button" data-mode="auto" aria-pressed="false"
+        data-i18n="modeAuto">Automatic</button>
+      <button type="button" data-mode="allowlist" aria-pressed="false"
+        data-i18n="modeAllowlist">Chosen sites</button>
+      <button type="button" data-mode="manual" aria-pressed="false"
+        data-i18n="modeManual">Manual</button>
+    </div>
+    <p id="mode-hint" class="hint"></p>
+  </section>
+
+  <section class="group group--switches">
+    <label class="switch">
+      <input id="site-allow" type="checkbox">
+      <span class="switch__text"><span data-i18n="popupAlwaysTranslate">Always translate</span>
+        <b id="host-allow" class="host">this site</b></span>
+    </label>
+
+    <label class="switch">
+      <input id="site-deny" type="checkbox">
+      <span class="switch__text"><span data-i18n="popupNeverTranslate">Never translate</span>
+        <b id="host-deny" class="host">this site</b></span>
+    </label>
+
+    <label class="switch">
+      <input id="hover" type="checkbox">
+      <span class="switch__text"><span data-i18n="popupHover">Show the original on hover</span>
+        <span class="switch__note" data-i18n="popupHoverNote">Point at a phrase to see what it said.</span></span>
+    </label>
+  </section>
+
+  <footer class="foot">
+    <button id="options" class="btn btn--quiet" type="button"
+      data-i18n="popupAllSettings">All settings</button>
+    <kbd id="shortcut" class="kbd">Alt+T</kbd>
+  </footer>
+
+  <script src="../shared/namespace.js"></script>
+  <script src="../shared/protocol.js"></script>
+  <script src="../shared/settings.js"></script>
+  <script src="../shared/languages.js"></script>
+  <script src="../shared/engine.js"></script>
+  <script src="i18n.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

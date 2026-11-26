@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Magyar &rarr; English Page Translator &mdash; Settings</title>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="page">
+    <header class="masthead">
+      <h1 class="wordmark">Magyar <i>&rarr;</i> English</h1>
+      <p data-i18n="optionsBlurb">
+        Translation runs on your own machine with the model built into Chrome.
+        No API key, no quota, and no page text is ever sent to a server.
+      </p>
+    </header>
+
+    <section class="section">
+      <h2 class="label" data-i18n="optionsWhen">When</h2>
+      <div class="section__body">
+        <div class="field">
+          <label for="mode" data-i18n="optionsTranslateLabel">Translate</label>
+          <select id="mode" class="input medium">
+            <option value="auto" data-i18n="modeAutoLong">Every foreign page</option>
+            <option value="allowlist" data-i18n="modeAllowlistLong">Only chosen sites</option>
+            <option value="manual" data-i18n="modeManualLong">Only when I ask</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="minScore" data-i18n="optionsThreshold">How sure it has to be</label>
+          <div class="slider">
+            <input id="minScore" type="range" min="0" max="0.5" step="0.01">
+            <output id="minScore-out" for="minScore">0.06</output>
+          </div>
+          <p class="hint" data-i18n="optionsThresholdHint">
+            Applies to the built-in Hungarian check. Lower catches more pages,
+            including mixed-language ones. Raise it if English pages are being
+            translated by mistake. The default, 0.06, is deliberately permissive.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="label" data-i18n="optionsSites">Sites</h2>
+      <div class="section__body">
+        <div class="pair">
+          <div class="field">
+            <label for="allowlist" data-i18n="optionsAlwaysList">Always translate</label>
+            <textarea id="allowlist" class="input" spellcheck="false"
+              placeholder="telex.hu&#10;nav.gov.hu"></textarea>
+            <p class="hint" data-i18n="optionsAlwaysHint">One hostname per line. Subdomains are included.</p>
+          </div>
+          <div class="field">
+            <label for="denylist" data-i18n="optionsNeverList">Never translate</label>
+            <textarea id="denylist" class="input" spellcheck="false"
+              placeholder="github.com&#10;localhost"></textarea>
+            <p class="hint" data-i18n="optionsNeverHint">Wins over the always list.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="label" data-i18n="optionsWhat">What</h2>
+      <div class="section__body stack">
+        <label class="switch">
+          <input id="translateAttributes" type="checkbox">
+          <span class="switch__text"><span data-i18n="optionsAttrs">Tooltips, image descriptions and placeholders</span>
+            <span class="switch__note" data-i18n="optionsAttrsNote">Text that only appears on hover or inside empty form fields.</span></span>
+        </label>
+        <label class="switch">
+          <input id="translateTitle" type="checkbox">
+          <span class="switch__text" data-i18n="optionsTitle">The browser tab title</span>
+        </label>
+        <label class="switch">
+          <input id="showOriginalOnHover" type="checkbox">
+          <span class="switch__text"><span data-i18n="optionsHover">Show the original on hover</span>
+            <span class="switch__note" data-i18n="optionsHoverNote">Point at any translated phrase to see what it said.</span></span>
+        </label>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="label" data-i18n="optionsLanguages">Languages</h2>
+      <div class="section__body">
+        <label class="switch">
+          <input id="autoDetectSource" type="checkbox">
+          <span class="switch__text"><span data-i18n="optionsAutoDetect">Work out the page language automatically</span>
+            <span class="switch__note" data-i18n="optionsAutoDetectNote">Translates any language Chrome supports, not only the one chosen below. Needs Chrome's language detector.</span></span>
+        </label>
+
+        <div class="pair pair--spaced">
+          <div class="field">
+            <label for="sourceLanguage" id="source-label" data-i18n="optionsFrom">From</label>
+            <select id="sourceLanguage" class="input"></select>
+          </div>
+          <div class="field">
+            <label for="targetLanguage" data-i18n="optionsTo">To</label>
+            <select id="targetLanguage" class="input"></select>
+          </div>
+        </div>
+        <p class="hint" id="pair-status">&nbsp;</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="label" data-i18n="optionsGlossary">Glossary</h2>
+      <div class="section__body">
+        <div class="field">
+          <label for="glossary" data-i18n="optionsGlossaryLabel">Leave these exactly as they are</label>
+          <textarea id="glossary" class="input" spellcheck="false"
+            placeholder="Ügyfélkapu&#10;NAV&#10;Telex"></textarea>
+          <p class="hint" data-i18n="optionsGlossaryHint">
+            One term per line: brand names, product names, legal terms. A phrase
+            that is nothing but a glossary term is never sent to the model at
+            all; inside a longer sentence the term is shielded and put back
+            afterwards. If the model loses it, the sentence is translated again
+            without the shield rather than left with a marker in it.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="label" data-i18n="optionsMemory">Memory</h2>
+      <div class="section__body stack">
+        <label class="switch">
+          <input id="cacheEnabled" type="checkbox">
+          <span class="switch__text"><span data-i18n="optionsCache">Remember translations between page loads</span>
+            <span class="switch__note" data-i18n="optionsCacheNote">Navigation and repeated headings are translated once, which makes later pages on a site nearly instant.</span></span>
+        </label>
+
+        <div class="field">
+          <label for="cacheLimit" data-i18n="optionsCacheLimit">Keep at most</label>
+          <input id="cacheLimit" class="input narrow" type="number"
+            min="500" max="200000" step="500">
+          <p class="hint" data-i18n="optionsCacheLimitHint">Phrases. The least recently used are dropped first once the limit is passed.</p>
+        </div>
+
+        <div class="row">
+          <span id="cache-stats" class="hint num"></span>
+          <button id="clear-cache" class="btn" type="button"
+            data-i18n="optionsClearCache">Clear now</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="label" data-i18n="optionsDiagnostics">Diagnostics</h2>
+      <div class="section__body">
+        <dl id="diag" class="diag"></dl>
+        <p class="hint" id="diag-note" hidden></p>
+        <div class="row row--spaced">
+          <button id="reset" class="btn" type="button"
+            data-i18n="optionsReset">Reset every setting</button>
+          <span class="hint" data-i18n="optionsResetHint">Site lists and glossary included. Remembered phrases are kept.</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="savebar" class="savebar" data-open="false">
+    <div class="savebar__inner">
+      <span class="savebar__text" id="savebar-text"
+        data-i18n="optionsUnsaved">You have unsaved changes.</span>
+      <button id="revert" class="btn" type="button" data-i18n="optionsDiscard">Discard</button>
+      <button id="save" class="btn btn--primary" type="button"
+        data-i18n="optionsSave">Save changes</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" data-open="false">Saved</div>
+
+  <script src="../shared/namespace.js"></script>
+  <script src="../shared/protocol.js"></script>
+  <script src="../shared/settings.js"></script>
+  <script src="../shared/languages.js"></script>
+  <script src="../shared/hash.js"></script>
+  <script src="../shared/glossary.js"></script>
+  <script src="../shared/engine.js"></script>
+  <script src="i18n.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

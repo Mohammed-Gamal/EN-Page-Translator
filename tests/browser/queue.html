@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head><meta charset="utf-8"><title>queue harness</title>
+<style>
+  body{font:13px ui-monospace,monospace;padding:16px;white-space:pre-wrap}
+  #stage{position:absolute;left:-10000px;top:0;width:600px}
+</style>
+</head>
+<body>
+<div id="out">running…</div>
+<div id="stage"></div>
+<script src="../../extension/src/shared/namespace.js"></script>
+<script src="../../extension/src/shared/protocol.js"></script>
+<script src="../../extension/src/shared/settings.js"></script>
+<script src="../../extension/src/shared/languages.js"></script>
+<script src="../../extension/src/shared/lang.js"></script>
+<script src="../../extension/src/shared/hash.js"></script>
+<script src="../../extension/src/shared/glossary.js"></script>
+<script src="../../extension/src/content/tags.js"></script>
+<script src="../../extension/src/content/segmenter.js"></script>
+<script src="../../extension/src/content/applier.js"></script>
+<script src="../../extension/src/content/queue.js"></script>
+<script>
+(async function () {
+  const log = [];
+  const ok = (label, cond, extra) =>
+    log.push((cond ? 'PASS  ' : 'FAIL  ') + label + (extra ? '  -> ' + extra : ''));
+  const stage = document.getElementById('stage');
+
+  function reset(html) {
+    HUEN.applier.restoreAll();
+    stage.innerHTML = html;
+    return stage;
+  }
+
+  // A fake model. `transform` decides what comes back for each request.
+  function makeTransport(transform, record) {
+    return {
+      async translate(texts) {
+        if (record) record.batches.push(texts.slice());
+        return texts.map(t => ({ ok: true, text: transform(t) }));
+      },
+      async cacheGet() { return {}; },
+      async cachePut(entries) { if (record) record.cached.push(...entries); },
+    };
+  }
+
+  function drain(queue) {
+    return queue.run();
+  }
+
+  try {
+    /* ---- 1. a sentence broken by inline markup survives the markers ---- */
+    let root = reset('<p>A <b>kutya</b> fut a kertben</p>');
+    let record = { batches: [], cached: [] };
+    let q = HUEN.createQueue({
+      source: 'hu', target: 'en',
+      transport: makeTransport(t => t.replace('A', 'The').replace('kutya', 'dog')
+        .replace('fut a kertben', 'runs in the garden'), record),
+    });
+    q.addFromCollection(HUEN.segmenter.collect(root, HUEN.applier.isDone));
+    await drain(q);
+    ok('markers put the pieces back in their own nodes',
+      stage.textContent.trim() === 'The dog runs in the garden',
+      JSON.stringify(stage.textContent));
+
+    /* ---- 2. a model that eats {n} but keeps [[n]] ---- */
+    root = reset('<p>A <b>kutya</b> fut a kertben</p>');
+    record = { batches: [], cached: [] };
+    q = HUEN.createQueue({
+      source: 'hu', target: 'en',
+      transport: makeTransport(function (t) {
+        if (t.indexOf('{1}') !== -1) return 'The dog runs in the garden'; // markers gone
+        return t.replace('A', 'The').replace('kutya', 'dog')
+          .replace('fut a kertben', 'runs in the garden');
+      }, record),
+    });
+    q.addFromCollection(HUEN.segmenter.collect(root, HUEN.applier.isDone));
+    await drain(q);
+    ok('the second marker syntax is tried',
+      record.batches.some(b => b.some(t => t.indexOf('[[1]]') !== -1)),
+      JSON.stringify(record.batches));
+    ok('the retry is counted', HUEN.applier.stats.markerRetries === 1,
+      String(HUEN.applier.stats.markerRetries));
+    ok('and the sentence still lands in the right nodes',
+      stage.querySelector('b').textContent.trim() === 'dog',
+      JSON.stringify(stage.textContent));
+
+    /* ---- 3. both syntaxes fail -> node-by-node, never garbled ---- */
+    root = reset('<p>A <b>kutya</b> fut a kertben</p>');
+    q = HUEN.createQueue({
+      source: 'hu', target: 'en',
+      transport: makeTransport(t => t.replace(/\[\[\d\]\]|\{\d\}/g, '').trim() + '!'),
+    });
+    q.addFromCollection(HUEN.segmenter.collect(root, HUEN.applier.isDone));
+    await drain(q);
+    ok('falls back to node-by-node', HUEN.applier.stats.fallbacks === 1,
+      String(HUEN.applier.stats.fallbacks));
+    ok('every node still got its own text',
+      stage.querySelector('b').textContent.trim() === 'kutya!',
+      JSON.stringify(stage.textContent));
+
+    /* ---- 4. glossary: exact term never sent, in-sentence term shielded ---- */
+    root = reset('<p>Lépjen be az Ügyfélkapu felületén</p><h2>Ügyfélkapu</h2>');
+    record = { batches: [], cached: [] };
+    const glossary = HUEN.glossary.create(['Ügyfélkapu']);
+    q = HUEN.createQueue({
+      source: 'hu', target: 'en', glossary,
+      transport: makeTransport(t => t.replace('Lépjen be az', 'Log in through the')
+        .replace('felületén', 'interface'), record),
+    });
+    q.addFromCollection(HUEN.segmenter.collect(root, HUEN.applier.isDone));
+    await drain(q);
+    const sent = record.batches.flat().join(' | ');
+    ok('a heading that is only a glossary term is never sent',
+      record.batches.flat().length === 1, sent);
+    ok('the term is shielded inside the sentence', sent.indexOf('{{G0}}') !== -1, sent);
+    ok('and restored in the page',
+      stage.querySelector('p').textContent.indexOf('Ügyfélkapu') !== -1,
+      JSON.stringify(stage.querySelector('p').textContent));
+    ok('the heading is untouched',
+      stage.querySelector('h2').textContent === 'Ügyfélkapu');
+    ok('no placeholder is cached',
+      !record.cached.some(([, v]) => v.indexOf('{{G') !== -1),
+      JSON.stringify(record.cached));
+
+    /* ---- 5. a model that eats the shield -> retranslate unprotected ---- */
+    root = reset('<p>Lépjen be az Ügyfélkapu felületén</p>');
+    record = { batches: [], cached: [] };
+    q = HUEN.createQueue({
+      source: 'hu', target: 'en',
+      glossary: HUEN.glossary.create(['Ügyfélkapu']),
+      transport: makeTransport(t => t.replace('{{G0}}', 'the portal')
+        .replace('Ügyfélkapu', 'the client gate')
+        .replace('Lépjen be az', 'Log in through')
+        .replace('felületén', 'interface'), record),
+    });
+    q.addFromCollection(HUEN.segmenter.collect(root, HUEN.applier.isDone));
+    await drain(q);
+    ok('a lost shield triggers one retry',
+      HUEN.applier.stats.glossaryRetries === 1,
+      String(HUEN.applier.stats.glossaryRetries));
+    ok('no marker is left on the page',
+      stage.textContent.indexOf('{{G') === -1, JSON.stringify(stage.textContent));
+
+    /* ---- 6. streaming writes partials, then the final text ---- */
+    root = reset('<p>' + 'Ez egy nagyon hosszú magyar bekezdés. '.repeat(14) + '</p>');
+    const partials = [];
+    q = HUEN.createQueue({
+      source: 'hu', target: 'en',
+      transport: {
+        async translate(texts) { return texts.map(t => ({ ok: true, text: 'batched' })); },
+        async translateLong(text, onPartial) {
+          onPartial('A very');
+          onPartial('A very long');
+          return { ok: true, text: 'A very long English paragraph.' };
+        },
+        async cacheGet() { return {}; },
+        async cachePut() {},
+      },
+      onProgress() {},
+    });
+    const observer = new MutationObserver(() => partials.push(stage.textContent.trim()));
+    observer.observe(stage, { characterData: true, subtree: true, childList: true });
+    q.addFromCollection(HUEN.segmenter.collect(root, HUEN.applier.isDone));
+    await drain(q);
+    observer.disconnect();
+    ok('a long block goes down the streaming path',
+      stage.textContent.trim() === 'A very long English paragraph.',
+      JSON.stringify(stage.textContent.trim()));
+    // MutationObserver coalesces records, so the two onPartial writes can show
+    // up as one. What matters is that something shorter than the final text
+    // was on the page before the final text was.
+    ok('a partial reached the page before the final text',
+      partials.length > 1 &&
+      partials[0].length < 'A very long English paragraph.'.length,
+      JSON.stringify(partials));
+
+    /* ---- 7. a short block does not ---- */
+    root = reset('<p>Rövid magyar mondat itt.</p>');
+    let usedLong = false;
+    q = HUEN.createQueue({
+      source: 'hu', target: 'en',
+      transport: {
+        async translate(texts) { return texts.map(() => ({ ok: true, text: 'short path' })); },
+        async translateLong() { usedLong = true; return { ok: true, text: 'long path' }; },
+        async cacheGet() { return {}; },
+        async cachePut() {},
+      },
+    });
+    q.addFromCollection(HUEN.segmenter.collect(root, HUEN.applier.isDone));
+    await drain(q);
+    ok('a short block uses the batched path',
+      !usedLong && stage.textContent.trim() === 'short path',
+      JSON.stringify(stage.textContent.trim()));
+
+    /* ---- 8. a cache hit is applied without calling the model ---- */
+    root = reset('<p>Kapcsolat</p>');
+    let called = false;
+    const key = HUEN.hash.cacheKey('Kapcsolat', 'hu', 'en', '');
+    q = HUEN.createQueue({
+      source: 'hu', target: 'en',
+      transport: {
+        async translate(texts) { called = true; return texts.map(() => ({ ok: true, text: 'x' })); },
+        async cacheGet(keys) { return keys.indexOf(key) !== -1 ? { [key]: 'Contact' } : {}; },
+        async cachePut() {},
+      },
+    });
+    q.addFromCollection(HUEN.segmenter.collect(root, HUEN.applier.isDone));
+    await drain(q);
+    ok('a cache hit skips the model',
+      !called && stage.textContent.trim() === 'Contact',
+      JSON.stringify(stage.textContent.trim()));
+
+    /* ---- 9. a fatal code stops the run ---- */
+    root = reset('<p>Egy magyar mondat.</p><p>Másik magyar mondat.</p>');
+    let error = null;
+    q = HUEN.createQueue({
+      source: 'hu', target: 'en',
+      transport: {
+        async translate(texts) {
+          return texts.map(() => ({ ok: false, code: 'NEEDS_GESTURE', error: 'click first' }));
+        },
+        async cacheGet() { return {}; },
+        async cachePut() {},
+      },
+      onError(err) { error = err; },
+    });
+    q.addFromCollection(HUEN.segmenter.collect(root, HUEN.applier.isDone));
+    await drain(q);
+    ok('a fatal engine code surfaces', error && error.code === 'NEEDS_GESTURE',
+      error ? error.code : 'none');
+    ok('and the page is left alone',
+      stage.textContent.indexOf('magyar') !== -1);
+
+    /* ---- 10. attributes go through the same machinery ---- */
+    root = reset('<img alt="Egy piros autó az utcán" src="x.png">');
+    q = HUEN.createQueue({
+      source: 'hu', target: 'en',
+      transport: makeTransport(() => 'A red car in the street'),
+    });
+    q.addFromCollection(HUEN.segmenter.collect(root, HUEN.applier.isDone));
+    await drain(q);
+    ok('an attribute is translated',
+      stage.querySelector('img').getAttribute('alt') === 'A red car in the street',
+      stage.querySelector('img').getAttribute('alt'));
+
+    HUEN.applier.restoreAll();
+    ok('restoring puts the attribute back',
+      stage.querySelector('img').getAttribute('alt') === 'Egy piros autó az utcán');
+  } catch (err) {
+    log.push('THREW  ' + (err && err.stack || err));
+  }
+
+  const failed = log.filter(l => !l.startsWith('PASS')).length;
+  document.getElementById('out').textContent =
+    log.join('\n') + '\n\n' + (failed ? failed + ' FAILED' : 'ALL PASS');
+  document.title = failed ? 'FAIL' : 'PASS';
+})();
+</script>
+</body>
+</html>

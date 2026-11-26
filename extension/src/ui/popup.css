@@ -1,0 +1,162 @@
+/* Popup layout. Tokens and controls come from theme.css. */
+
+body {
+  width: 352px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 15px 12px;
+  border-bottom: 1px solid var(--rule);
+}
+
+/* The engine pill says where the translating happens. It is the one piece of
+   reassurance that earns permanent screen space: "on-device" is the whole
+   reason to use this instead of a web translator. */
+.engine {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  padding: 3px 8px 3px 7px;
+  font-size: 10.5px;
+  font-weight: 550;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+  background: var(--paper-sunk);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.engine__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+}
+
+.engine[data-tone="ok"] {
+  color: var(--accent);
+  background: var(--accent-wash);
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.engine[data-tone="ok"] .engine__dot { background: var(--accent); }
+
+.engine[data-tone="warn"] {
+  color: var(--warn);
+  background: var(--warn-wash);
+  border-color: color-mix(in srgb, var(--warn) 30%, transparent);
+}
+
+.engine[data-tone="warn"] .engine__dot { background: var(--warn); }
+
+.engine[data-tone="error"] {
+  color: var(--error);
+  background: var(--error-wash);
+  border-color: color-mix(in srgb, var(--error) 28%, transparent);
+}
+
+.engine[data-tone="error"] .engine__dot { background: var(--error); }
+
+/* ---------- status ---------- */
+
+.state-block {
+  padding: 13px 15px;
+}
+
+.state {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 550;
+}
+
+.detail {
+  margin: 3px 0 0 15px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.meter {
+  margin: 11px 0 1px 15px;
+}
+
+/* ---------- the download notice ---------- */
+
+.notice {
+  margin: 0 15px 14px;
+  padding: 11px 12px;
+  background: var(--warn-wash);
+  border: 1px solid color-mix(in srgb, var(--warn) 26%, transparent);
+  border-radius: var(--radius);
+}
+
+.notice__text {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/* ---------- actions ---------- */
+
+.actions {
+  display: flex;
+  gap: 8px;
+  padding: 0 15px 15px;
+}
+
+.actions .btn {
+  flex: 1 1 0;
+}
+
+/* ---------- grouped settings ---------- */
+
+.group {
+  padding: 13px 15px;
+  border-top: 1px solid var(--rule);
+}
+
+.group .label {
+  display: block;
+  margin: 0 0 8px;
+}
+
+.group--switches {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.host {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- footer ---------- */
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 11px 10px 11px;
+  border-top: 1px solid var(--rule);
+  background: var(--paper-sunk);
+}
+
+.kbd {
+  padding: 2px 6px;
+  font-family: var(--sans);
+  font-size: 10.5px;
+  font-weight: 550;
+  color: var(--ink-faint);
+  background: var(--paper-raised);
+  border: 1px solid var(--rule-strong);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+}

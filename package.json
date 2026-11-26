@@ -1,0 +1,10 @@
+{
+  "name": "hu-en-page-translator",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Chrome/Edge extension translating Hungarian pages to English with the browser's on-device Translator model.",
+  "scripts": {
+    "test": "node --test \"tests/*.test.js\"",
+    "serve": "python -m http.server 8733 --bind 127.0.0.1"
+  }
+}

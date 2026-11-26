@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <title>Teszt oldal &ndash; Magyar sz&ouml;veg</title>
+  <style>
+    body { font: 15px/1.6 system-ui, sans-serif; max-width: 760px; margin: 40px auto; padding: 0 20px; }
+    section { border: 1px solid #ddd; border-radius: 8px; padding: 14px 18px; margin: 18px 0; }
+    h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: #666; margin-top: 0; }
+    code, pre { background: #f4f4f5; padding: 2px 5px; border-radius: 4px; }
+    .expect { font-size: 12.5px; color: #16a34a; margin-top: 10px; }
+    .expect b { color: #0f172a; }
+  </style>
+</head>
+<body>
+  <h1>Üdvözöljük a teszt oldalon</h1>
+
+  <section>
+    <h2>1 &mdash; Egyszerű bekezdés</h2>
+    <p>
+      Az ügyfélszolgálatunk hétfőtől péntekig, reggel nyolc órától délután
+      négy óráig tart nyitva. Kérjük, hogy a bejelentkezés előtt készítse elő
+      az azonosítóját és a jelszavát.
+    </p>
+    <p class="expect"><b>Elvárás:</b> folyékony angol mondatok.</p>
+  </section>
+
+  <section>
+    <h2>2 &mdash; Mondat belsejében lévő formázás</h2>
+    <p>
+      A <b>kutya</b> gyorsan fut a <i>kertben</i>, miközben a
+      <a href="https://example.hu">macska</a> a fán ül és figyeli.
+    </p>
+    <p class="expect">
+      <b>Elvárás:</b> a félkövér, dőlt és link formázás megmarad, a mondat
+      mégis értelmes angolul. Ez a legnehezebb eset.
+    </p>
+  </section>
+
+  <section>
+    <h2>3 &mdash; Attribútumok</h2>
+    <p>
+      <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+           alt="Egy piros autó az utcán" title="Kattintson a nagyításhoz"
+           width="40" height="30" style="border:1px solid #ccc">
+    </p>
+    <p>
+      <input type="text" placeholder="Írja be a nevét" aria-label="Teljes név" size="30">
+      <input type="submit" value="Elküldés">
+    </p>
+    <button title="Mentés a kedvencek közé">Hozzáadás</button>
+    <p class="expect"><b>Elvárás:</b> a súgószövegek, a helykitöltő és a gomb felirata is angolul.</p>
+  </section>
+
+  <section>
+    <h2>4 &mdash; Lista és táblázat</h2>
+    <ul>
+      <li>Első lépés: regisztráljon a rendszerben</li>
+      <li>Második lépés: töltse ki az adatlapot</li>
+      <li>Harmadik lépés: küldje be a kérelmet</li>
+    </ul>
+    <table border="1" cellpadding="6" style="border-collapse:collapse">
+      <thead><tr><th>Szolgáltatás</th><th>Határidő</th><th>Díj</th></tr></thead>
+      <tbody>
+        <tr><td>Lakcímkártya igénylése</td><td>8 munkanap</td><td>3 000 Ft</td></tr>
+        <tr><td>Személyi igazolvány</td><td>15 munkanap</td><td>ingyenes</td></tr>
+      </tbody>
+    </table>
+    <p class="expect"><b>Elvárás:</b> az árak és a határidők számai változatlanok.</p>
+  </section>
+
+  <section>
+    <h2>5 &mdash; Amit NEM szabad lefordítani</h2>
+    <pre><code>const üzenet = "Ez egy kódrészlet, nem fordítandó";</code></pre>
+    <p translate="no">Ez a bekezdés translate="no" jelölésű, maradjon magyarul.</p>
+    <p class="notranslate">Ez a bekezdés notranslate osztályú, maradjon magyarul.</p>
+    <textarea rows="2" cols="40">Felhasználói szöveg, nem fordítandó.</textarea>
+    <p>Ár: 12 345 Ft &mdash; 2024.03.15. &mdash; info@example.hu</p>
+    <p class="expect">
+      <b>Elvárás:</b> a kódrészlet, a két megjelölt bekezdés és a szövegdoboz
+      magyar marad; a számok, a dátum és az e-mail cím változatlan.
+    </p>
+  </section>
+
+  <section>
+    <h2>6 &mdash; Később betöltődő tartalom</h2>
+    <div id="dinamikus"><em>Töltés…</em></div>
+    <button id="betolt" type="button">Új tartalom betöltése</button>
+    <p class="expect">
+      <b>Elvárás:</b> a két másodperc múlva megjelenő szöveg és a gombbal
+      hozzáadott elemek is automatikusan lefordulnak.
+    </p>
+  </section>
+
+  <section>
+    <h2>7 &mdash; Shadow DOM</h2>
+    <div id="arnyek"></div>
+    <p class="expect"><b>Elvárás:</b> a shadow root tartalma is lefordul.</p>
+  </section>
+
+  <script>
+    // Dynamically injected content, to exercise the MutationObserver.
+    setTimeout(function () {
+      document.getElementById('dinamikus').innerHTML =
+        '<p>Ez a bekezdés két másodperc késéssel jelent meg az oldalon, ' +
+        'és a bővítménynek ezt is le kell fordítania.</p>';
+    }, 2000);
+
+    var counter = 0;
+    document.getElementById('betolt').addEventListener('click', function () {
+      counter++;
+      var p = document.createElement('p');
+      p.textContent = 'Ez a ' + counter + '. gombnyomásra hozzáadott új bekezdés, ' +
+        'amelynek szintén angolul kell megjelennie.';
+      document.getElementById('dinamikus').appendChild(p);
+    });
+
+    var holder = document.getElementById('arnyek');
+    var root = holder.attachShadow({ mode: 'open' });
+    root.innerHTML =
+      '<p style="font:15px system-ui">Ez a szöveg egy árnyék gyökérben ' +
+      'található, amelyet a hagyományos bejárás nem mindig talál meg.</p>';
+  </script>
+</body>
+</html>

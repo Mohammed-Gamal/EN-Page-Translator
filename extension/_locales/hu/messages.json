@@ -1,0 +1,317 @@
+{
+  "appName": {
+    "message": "Magyar → angol oldalfordító"
+  },
+  "appShortName": {
+    "message": "Magyar → angol"
+  },
+  "appDescription": {
+    "message": "Magyar weboldalakat fordít angolra a számítógépeden, a Chrome beépített fordítójával. Nincs API-kulcs, nincs kvóta, semmi nem hagyja el a gépedet."
+  },
+  "commandToggle": {
+    "message": "Oldal lefordítása / visszaállítása"
+  },
+  "menuTranslatePage": {
+    "message": "Oldal lefordítása"
+  },
+  "menuTranslateSelection": {
+    "message": "A kijelölt szöveg lefordítása"
+  },
+  "statusIdle": {
+    "message": "Nem csinál semmit ezen az oldalon"
+  },
+  "statusChecking": {
+    "message": "Az oldal vizsgálata"
+  },
+  "statusSkipped": {
+    "message": "Az eredeti nyelven hagyva"
+  },
+  "statusNeedsDownload": {
+    "message": "Hiányzik a nyelvi modell"
+  },
+  "statusDownloading": {
+    "message": "A nyelvi modell letöltése"
+  },
+  "statusTranslating": {
+    "message": "Fordítás"
+  },
+  "statusDone": {
+    "message": "Lefordítva"
+  },
+  "statusError": {
+    "message": "Valami hiba történt"
+  },
+  "skippedBecause": {
+    "message": "Az eredeti nyelven maradt, mert $1."
+  },
+  "cardEyebrow": {
+    "message": "$1 nyelvű oldal"
+  },
+  "cardDownloadAction": {
+    "message": "Letöltés és fordítás"
+  },
+  "cardNotNow": {
+    "message": "Most nem"
+  },
+  "cardNeedsDownload": {
+    "message": "Az oldal lefordításához egyszer le kell tölteni a(z) $1 modellt. Utána offline is működik."
+  },
+  "cardNeedsGesture": {
+    "message": "A Chrome egy kattintást kér, mielőtt letöltené a nyelvi modellt."
+  },
+  "cardDownloading": {
+    "message": "A nyelvi modell letöltése… $1%"
+  },
+  "cardUnavailable": {
+    "message": "Nem elérhető"
+  },
+  "cardFailed": {
+    "message": "A fordítás nem sikerült"
+  },
+  "errorNoPair": {
+    "message": "Ebben a böngészőben nincs beépített fordító ehhez: $1. Asztali Chrome 138+ vagy Edge 148+ szükséges."
+  },
+  "popupDownloadBlurb": {
+    "message": "A Chrome a saját lemezeden tárolja a nyelvi modellt. Egyszer tölti le, utána offline is működik, és semmibe nem kerül."
+  },
+  "popupDownloadAction": {
+    "message": "Modell letöltése"
+  },
+  "popupTranslate": {
+    "message": "Oldal fordítása"
+  },
+  "popupTranslateRest": {
+    "message": "A többi rész fordítása"
+  },
+  "popupRestore": {
+    "message": "Eredeti mutatása"
+  },
+  "popupWhenLabel": {
+    "message": "Mikor fordítson"
+  },
+  "popupAlwaysTranslate": {
+    "message": "Mindig fordítsa"
+  },
+  "popupNeverTranslate": {
+    "message": "Soha ne fordítsa"
+  },
+  "popupHover": {
+    "message": "Eredeti szöveg rámutatásra"
+  },
+  "popupHoverNote": {
+    "message": "Mutass egy kifejezésre, és látod az eredetit."
+  },
+  "popupAllSettings": {
+    "message": "Összes beállítás"
+  },
+  "stateNoAccess": {
+    "message": "Itt nem érhető el"
+  },
+  "stateNoAccessDetail": {
+    "message": "A kiegészítő nem fér hozzá ehhez az oldalhoz."
+  },
+  "engineOnDevice": {
+    "message": "helyben"
+  },
+  "engineDownloading": {
+    "message": "letöltés"
+  },
+  "engineNeedsDownload": {
+    "message": "letöltés kell"
+  },
+  "engineUnsupportedPair": {
+    "message": "nem támogatott pár"
+  },
+  "engineUnavailable": {
+    "message": "nem elérhető"
+  },
+  "workPhrases": {
+    "message": "$1 kifejezés"
+  },
+  "workLabels": {
+    "message": "$1 felirat"
+  },
+  "workChars": {
+    "message": "$1 karakter"
+  },
+  "workSplit": {
+    "message": "$1 darabolva"
+  },
+  "modeAuto": {
+    "message": "Automatikus"
+  },
+  "modeAllowlist": {
+    "message": "Választott oldalak"
+  },
+  "modeManual": {
+    "message": "Kézi"
+  },
+  "modeAutoLong": {
+    "message": "Minden idegen nyelvű oldal"
+  },
+  "modeAllowlistLong": {
+    "message": "Csak a választott oldalak"
+  },
+  "modeManualLong": {
+    "message": "Csak ha kérem"
+  },
+  "modeAutoHint": {
+    "message": "Minden idegen nyelvű oldal fordításra kerül betöltéskor."
+  },
+  "modeAllowlistHint": {
+    "message": "Csak az alább megjelölt oldalak fordítása történik meg."
+  },
+  "modeManualHint": {
+    "message": "Semmi nem fordítódik le, amíg nem kéred itt vagy a gyorsbillentyűvel."
+  },
+  "optionsBlurb": {
+    "message": "A fordítás a saját gépeden fut, a Chrome beépített modelljével. Nincs API-kulcs, nincs kvóta, és az oldal szövege soha nem megy szerverre."
+  },
+  "optionsWhen": {
+    "message": "Mikor"
+  },
+  "optionsTranslateLabel": {
+    "message": "Fordítás"
+  },
+  "optionsThreshold": {
+    "message": "Mennyire legyen biztos"
+  },
+  "optionsThresholdHint": {
+    "message": "A beépített magyar ellenőrzésre vonatkozik. Alacsonyabb érték több oldalt fog meg, a vegyes nyelvűeket is. Emeld, ha angol oldalakat is lefordít. Az alapértelmezett 0,06 szándékosan megengedő."
+  },
+  "optionsSites": {
+    "message": "Oldalak"
+  },
+  "optionsAlwaysList": {
+    "message": "Mindig fordítsa"
+  },
+  "optionsAlwaysHint": {
+    "message": "Soronként egy cím. Az aldomének is beletartoznak."
+  },
+  "optionsNeverList": {
+    "message": "Soha ne fordítsa"
+  },
+  "optionsNeverHint": {
+    "message": "Erősebb a \"mindig\" listánál."
+  },
+  "optionsWhat": {
+    "message": "Mit"
+  },
+  "optionsAttrs": {
+    "message": "Buboréksúgók, képleírások és űrlapszövegek"
+  },
+  "optionsAttrsNote": {
+    "message": "Olyan szöveg, ami csak rámutatáskor vagy üres mezőkben látszik."
+  },
+  "optionsTitle": {
+    "message": "A böngészőfül címe"
+  },
+  "optionsHover": {
+    "message": "Eredeti szöveg rámutatásra"
+  },
+  "optionsHoverNote": {
+    "message": "Mutass bármelyik lefordított kifejezésre, és látod az eredetit."
+  },
+  "optionsLanguages": {
+    "message": "Nyelvek"
+  },
+  "optionsAutoDetect": {
+    "message": "Az oldal nyelvének automatikus felismerése"
+  },
+  "optionsAutoDetectNote": {
+    "message": "Bármelyik Chrome által támogatott nyelvet fordítja, nem csak az alább választottat. Szüksége van a Chrome nyelvfelismerőjére."
+  },
+  "optionsFrom": {
+    "message": "Erről"
+  },
+  "optionsFromFallback": {
+    "message": "Erről (ha a felismerés nem sikerül)"
+  },
+  "optionsTo": {
+    "message": "Erre"
+  },
+  "pairReady": {
+    "message": "Kész — ehhez a párhoz a modell már a lemezeden van."
+  },
+  "pairDownloadable": {
+    "message": "Támogatott — a modell az első használatkor töltődik le."
+  },
+  "pairDownloading": {
+    "message": "Ehhez a párhoz most töltődik le a modell."
+  },
+  "pairUnsupported": {
+    "message": "Ez a böngésző nem tudja fordítani ezt a párt."
+  },
+  "optionsGlossary": {
+    "message": "Szójegyzék"
+  },
+  "optionsGlossaryLabel": {
+    "message": "Ezeket hagyja pontosan így"
+  },
+  "optionsGlossaryHint": {
+    "message": "Soronként egy kifejezés: márkanevek, terméknevek, jogi kifejezések. Ha egy kifejezés önmagában szerepel, el sem küldi a modellnek; hosszabb mondaton belül védve küldi, és utána visszaállítja. Ha a modell elveszti, inkább újra lefordítja a mondatot védelem nélkül."
+  },
+  "optionsMemory": {
+    "message": "Memória"
+  },
+  "optionsCache": {
+    "message": "Fordítások megjegyzése oldalbetöltések között"
+  },
+  "optionsCacheNote": {
+    "message": "A menük és az ismétlődő címek csak egyszer fordítódnak le, így egy oldal többi lapja szinte azonnal kész."
+  },
+  "optionsCacheLimit": {
+    "message": "Legfeljebb ennyi"
+  },
+  "optionsCacheLimitHint": {
+    "message": "Kifejezés. A limit átlépésekor a legrégebben használtak tűnnek el először."
+  },
+  "optionsCacheStats": {
+    "message": "$1 kifejezés megjegyezve, körülbelül $2 KB"
+  },
+  "optionsCacheEmpty": {
+    "message": "Még nincs megjegyezve semmi."
+  },
+  "optionsClearCache": {
+    "message": "Törlés most"
+  },
+  "optionsDiagnostics": {
+    "message": "Diagnosztika"
+  },
+  "optionsReset": {
+    "message": "Összes beállítás visszaállítása"
+  },
+  "optionsResetHint": {
+    "message": "Az oldallistákkal és a szójegyzékkel együtt. A megjegyzett kifejezések megmaradnak."
+  },
+  "optionsUnsaved": {
+    "message": "Nem mentett módosításaid vannak."
+  },
+  "optionsDiscard": {
+    "message": "Elvetés"
+  },
+  "optionsSave": {
+    "message": "Módosítások mentése"
+  },
+  "optionsSaved": {
+    "message": "Beállítások mentve"
+  },
+  "optionsResetDone": {
+    "message": "Vissza az alapértelmezettre"
+  },
+  "optionsCacheCleared": {
+    "message": "A megjegyzett kifejezések törölve"
+  },
+  "diagBrowser": {
+    "message": "Böngésző"
+  },
+  "diagStorage": {
+    "message": "Felhasznált tárhely"
+  },
+  "diagExtension": {
+    "message": "Kiegészítő"
+  },
+  "diagVersion": {
+    "message": "$1 verzió"
+  }
+}

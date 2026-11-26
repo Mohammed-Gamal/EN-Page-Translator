@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>cache harness</title>
+<style>body{font:13px ui-monospace,monospace;padding:20px;white-space:pre-wrap}</style>
+</head>
+<body>
+<div id="out">running…</div>
+<script>
+  // A chrome.storage.local stub holding a legacy cache, so the migration path
+  // is exercised too.
+  const STORE = {
+    'c:hu>en|Kapcsolat': 'Contact',
+    'c:hu>en|Bejelentkezés': 'Log in',
+    cacheCount: 2,
+    settings: { mode: 'auto' },
+  };
+  globalThis.chrome = {
+    storage: {
+      local: {
+        async get(keys) {
+          if (keys === null) return Object.assign({}, STORE);
+          const list = Array.isArray(keys) ? keys : [keys];
+          const out = {};
+          for (const k of list) if (k in STORE) out[k] = STORE[k];
+          return out;
+        },
+        async set(obj) { Object.assign(STORE, obj); },
+        async remove(keys) {
+          for (const k of (Array.isArray(keys) ? keys : [keys])) delete STORE[k];
+        },
+      },
+    },
+  };
+</script>
+<script src="../../extension/src/shared/namespace.js"></script>
+<script src="../../extension/src/shared/protocol.js"></script>
+<script src="../../extension/src/background/cache.js"></script>
+<script>
+(async function () {
+  const log = [];
+  const ok = (label, cond, extra) =>
+    log.push((cond ? 'PASS  ' : 'FAIL  ') + label + (extra ? '  -> ' + extra : ''));
+
+  const cache = HUEN.cache;
+  try {
+    await indexedDB.deleteDatabase('huen-cache');
+
+    // 1. migration from the legacy storage.local layout
+    const migrated = await cache.get(['hu>en|Kapcsolat', 'hu>en|Bejelentkezés']);
+    ok('legacy entries migrate', migrated['hu>en|Kapcsolat'] === 'Contact' &&
+      migrated['hu>en|Bejelentkezés'] === 'Log in', JSON.stringify(migrated));
+    ok('legacy keys are removed from storage.local',
+      !Object.keys(STORE).some(k => k.startsWith('c:')) && !('cacheCount' in STORE),
+      Object.keys(STORE).join(','));
+    ok('settings are left alone', !!STORE.settings);
+    ok('migration is flagged', STORE.cacheMigratedToIdb === true);
+
+    // 2. put / get round trip
+    await cache.put([['k1', 'one'], ['k2', 'two'], ['bad'], ['k3', '']], 20000);
+    const got = await cache.get(['k1', 'k2', 'k3', 'missing']);
+    ok('put then get', got.k1 === 'one' && got.k2 === 'two', JSON.stringify(got));
+    ok('malformed and empty entries are skipped',
+      !('k3' in got) && !('missing' in got));
+
+    // 3. count
+    ok('count is exact', await cache.count() === 4, String(await cache.count()));
+
+    // 4. prune evicts the least recently used
+    const many = [];
+    for (let i = 0; i < 60; i++) many.push(['p' + i, 'v' + i]);
+    await cache.put(many, 100000);
+    const before = await cache.count();
+    await cache.get(['p0', 'p1']);           // these are now the freshest
+    const removed = await cache.prune(20);
+    const after = await cache.count();
+    ok('prune drops to below the cap', after <= 18, before + ' -> ' + after);
+    ok('prune reports what it removed', removed > 0, String(removed));
+
+    // 5. stats
+    const stats = await cache.stats();
+    ok('stats count matches', stats.entries === after,
+      stats.entries + ' vs ' + after);
+    ok('stats estimates a size', stats.bytes > 0, String(stats.bytes));
+
+    // 6. clear
+    const cleared = await cache.clear();
+    ok('clear empties the store', await cache.count() === 0, 'removed ' + cleared);
+    ok('get on an empty store is harmless',
+      Object.keys(await cache.get(['k1'])).length === 0);
+    ok('get with no keys short-circuits',
+      Object.keys(await cache.get([])).length === 0);
+  } catch (err) {
+    log.push('THREW  ' + (err && err.stack || err));
+  }
+
+  const failed = log.filter(l => !l.startsWith('PASS')).length;
+  document.getElementById('out').textContent =
+    log.join('\n') + '\n\n' + (failed ? failed + ' FAILED' : 'ALL PASS');
+  document.title = failed ? 'FAIL' : 'PASS';
+})();
+</script>
+</body>
+</html>

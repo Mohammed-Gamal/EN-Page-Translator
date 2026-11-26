@@ -1,0 +1,317 @@
+{
+  "appName": {
+    "message": "Magyar → English Page Translator"
+  },
+  "appShortName": {
+    "message": "Magyar → English"
+  },
+  "appDescription": {
+    "message": "Reliably translates Hungarian web pages to English on-device, using Chrome's built-in Translator. No API key, no quota, nothing leaves your computer."
+  },
+  "commandToggle": {
+    "message": "Translate / restore the current page"
+  },
+  "menuTranslatePage": {
+    "message": "Translate this page"
+  },
+  "menuTranslateSelection": {
+    "message": "Translate the selected text"
+  },
+  "statusIdle": {
+    "message": "Idle on this page"
+  },
+  "statusChecking": {
+    "message": "Looking at this page"
+  },
+  "statusSkipped": {
+    "message": "Left in its own language"
+  },
+  "statusNeedsDownload": {
+    "message": "Needs the language model"
+  },
+  "statusDownloading": {
+    "message": "Fetching the language model"
+  },
+  "statusTranslating": {
+    "message": "Translating"
+  },
+  "statusDone": {
+    "message": "Translated"
+  },
+  "statusError": {
+    "message": "Something went wrong"
+  },
+  "skippedBecause": {
+    "message": "Left in the original language because $1."
+  },
+  "cardEyebrow": {
+    "message": "$1 page"
+  },
+  "cardDownloadAction": {
+    "message": "Download & translate"
+  },
+  "cardNotNow": {
+    "message": "Not now"
+  },
+  "cardNeedsDownload": {
+    "message": "Translating this page needs a one-time $1 model download. After that it runs offline."
+  },
+  "cardNeedsGesture": {
+    "message": "Chrome needs one click before it will download the language model."
+  },
+  "cardDownloading": {
+    "message": "Downloading the language model… $1%"
+  },
+  "cardUnavailable": {
+    "message": "Unavailable"
+  },
+  "cardFailed": {
+    "message": "Translation failed"
+  },
+  "errorNoPair": {
+    "message": "This browser has no built-in translator for $1. Desktop Chrome 138+ or Edge 148+ is required."
+  },
+  "popupDownloadBlurb": {
+    "message": "Chrome keeps the language model on your own disk. It downloads once, then works offline and costs nothing."
+  },
+  "popupDownloadAction": {
+    "message": "Download the model"
+  },
+  "popupTranslate": {
+    "message": "Translate page"
+  },
+  "popupTranslateRest": {
+    "message": "Translate the rest"
+  },
+  "popupRestore": {
+    "message": "Show original"
+  },
+  "popupWhenLabel": {
+    "message": "When to translate"
+  },
+  "popupAlwaysTranslate": {
+    "message": "Always translate"
+  },
+  "popupNeverTranslate": {
+    "message": "Never translate"
+  },
+  "popupHover": {
+    "message": "Show the original on hover"
+  },
+  "popupHoverNote": {
+    "message": "Point at a phrase to see what it said."
+  },
+  "popupAllSettings": {
+    "message": "All settings"
+  },
+  "stateNoAccess": {
+    "message": "Not available here"
+  },
+  "stateNoAccessDetail": {
+    "message": "The extension has no access to this page."
+  },
+  "engineOnDevice": {
+    "message": "on-device"
+  },
+  "engineDownloading": {
+    "message": "downloading"
+  },
+  "engineNeedsDownload": {
+    "message": "needs download"
+  },
+  "engineUnsupportedPair": {
+    "message": "pair unsupported"
+  },
+  "engineUnavailable": {
+    "message": "unavailable"
+  },
+  "workPhrases": {
+    "message": "$1 phrases"
+  },
+  "workLabels": {
+    "message": "$1 labels"
+  },
+  "workChars": {
+    "message": "$1 characters"
+  },
+  "workSplit": {
+    "message": "$1 split up"
+  },
+  "modeAuto": {
+    "message": "Automatic"
+  },
+  "modeAllowlist": {
+    "message": "Chosen sites"
+  },
+  "modeManual": {
+    "message": "Manual"
+  },
+  "modeAutoLong": {
+    "message": "Every foreign page"
+  },
+  "modeAllowlistLong": {
+    "message": "Only chosen sites"
+  },
+  "modeManualLong": {
+    "message": "Only when I ask"
+  },
+  "modeAutoHint": {
+    "message": "Every foreign page is translated as it loads."
+  },
+  "modeAllowlistHint": {
+    "message": "Only the sites you have marked below are translated."
+  },
+  "modeManualHint": {
+    "message": "Nothing is translated until you ask, here or with the shortcut."
+  },
+  "optionsBlurb": {
+    "message": "Translation runs on your own machine with the model built into Chrome. No API key, no quota, and no page text is ever sent to a server."
+  },
+  "optionsWhen": {
+    "message": "When"
+  },
+  "optionsTranslateLabel": {
+    "message": "Translate"
+  },
+  "optionsThreshold": {
+    "message": "How sure it has to be"
+  },
+  "optionsThresholdHint": {
+    "message": "Applies to the built-in Hungarian check. Lower catches more pages, including mixed-language ones. Raise it if English pages are being translated by mistake. The default, 0.06, is deliberately permissive."
+  },
+  "optionsSites": {
+    "message": "Sites"
+  },
+  "optionsAlwaysList": {
+    "message": "Always translate"
+  },
+  "optionsAlwaysHint": {
+    "message": "One hostname per line. Subdomains are included."
+  },
+  "optionsNeverList": {
+    "message": "Never translate"
+  },
+  "optionsNeverHint": {
+    "message": "Wins over the always list."
+  },
+  "optionsWhat": {
+    "message": "What"
+  },
+  "optionsAttrs": {
+    "message": "Tooltips, image descriptions and placeholders"
+  },
+  "optionsAttrsNote": {
+    "message": "Text that only appears on hover or inside empty form fields."
+  },
+  "optionsTitle": {
+    "message": "The browser tab title"
+  },
+  "optionsHover": {
+    "message": "Show the original on hover"
+  },
+  "optionsHoverNote": {
+    "message": "Point at any translated phrase to see what it said."
+  },
+  "optionsLanguages": {
+    "message": "Languages"
+  },
+  "optionsAutoDetect": {
+    "message": "Work out the page language automatically"
+  },
+  "optionsAutoDetectNote": {
+    "message": "Translates any language Chrome supports, not only the one chosen below. Needs Chrome's language detector."
+  },
+  "optionsFrom": {
+    "message": "From"
+  },
+  "optionsFromFallback": {
+    "message": "From (when detection fails)"
+  },
+  "optionsTo": {
+    "message": "To"
+  },
+  "pairReady": {
+    "message": "Ready — the model for this pair is already on your disk."
+  },
+  "pairDownloadable": {
+    "message": "Supported — the model downloads the first time you use it."
+  },
+  "pairDownloading": {
+    "message": "The model for this pair is downloading now."
+  },
+  "pairUnsupported": {
+    "message": "This browser cannot translate this pair."
+  },
+  "optionsGlossary": {
+    "message": "Glossary"
+  },
+  "optionsGlossaryLabel": {
+    "message": "Leave these exactly as they are"
+  },
+  "optionsGlossaryHint": {
+    "message": "One term per line: brand names, product names, legal terms. A phrase that is nothing but a glossary term is never sent to the model at all; inside a longer sentence the term is shielded and put back afterwards. If the model loses it, the sentence is translated again without the shield rather than left with a marker in it."
+  },
+  "optionsMemory": {
+    "message": "Memory"
+  },
+  "optionsCache": {
+    "message": "Remember translations between page loads"
+  },
+  "optionsCacheNote": {
+    "message": "Navigation and repeated headings are translated once, which makes later pages on a site nearly instant."
+  },
+  "optionsCacheLimit": {
+    "message": "Keep at most"
+  },
+  "optionsCacheLimitHint": {
+    "message": "Phrases. The least recently used are dropped first once the limit is passed."
+  },
+  "optionsCacheStats": {
+    "message": "$1 phrases remembered, about $2 KB"
+  },
+  "optionsCacheEmpty": {
+    "message": "Nothing remembered yet."
+  },
+  "optionsClearCache": {
+    "message": "Clear now"
+  },
+  "optionsDiagnostics": {
+    "message": "Diagnostics"
+  },
+  "optionsReset": {
+    "message": "Reset every setting"
+  },
+  "optionsResetHint": {
+    "message": "Site lists and glossary included. Remembered phrases are kept."
+  },
+  "optionsUnsaved": {
+    "message": "You have unsaved changes."
+  },
+  "optionsDiscard": {
+    "message": "Discard"
+  },
+  "optionsSave": {
+    "message": "Save changes"
+  },
+  "optionsSaved": {
+    "message": "Settings saved"
+  },
+  "optionsResetDone": {
+    "message": "Back to defaults"
+  },
+  "optionsCacheCleared": {
+    "message": "Remembered phrases cleared"
+  },
+  "diagBrowser": {
+    "message": "Browser"
+  },
+  "diagStorage": {
+    "message": "Storage used"
+  },
+  "diagExtension": {
+    "message": "Extension"
+  },
+  "diagVersion": {
+    "message": "version $1"
+  }
+}

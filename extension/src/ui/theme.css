@@ -1,0 +1,387 @@
+/* Shared design tokens and controls for the popup and the options page.
+
+   The palette is warm neutral rather than the usual cool grey, and the accent
+   is a deep green: it has to read as "ready" on a badge, sit next to a page of
+   arbitrary colours without clashing, and stay legible at 10px. The wordmark is
+   set in a serif on purpose — this is a tool about language, and the serif is
+   the one place the UI is allowed to have a voice.
+
+   Everything here is tokens plus controls. Page-specific layout lives in
+   popup.css and options.css. */
+
+:root {
+  color-scheme: light dark;
+
+  /* Paper and ink */
+  --paper: #fffefb;
+  --paper-sunk: #f7f4ed;
+  --paper-raised: #ffffff;
+  --ink: #23201b;
+  --ink-soft: #5f584c;
+  --ink-faint: #8a8275;
+  --rule: #e4ded2;
+  --rule-strong: #d2cabb;
+
+  /* Accents, used sparingly */
+  --accent: #2f6b4f;
+  --accent-deep: #24523d;
+  --accent-wash: #eaf1ec;
+  --warn: #9a6514;
+  --warn-wash: #faf1e0;
+  --error: #a92f26;
+  --error-wash: #fbeeec;
+
+  --radius: 8px;
+  --radius-sm: 6px;
+
+  --shadow-raise:
+    0 1px 1px rgba(35, 32, 27, 0.04),
+    0 2px 6px rgba(35, 32, 27, 0.05);
+
+  --sans: system-ui, -apple-system, "Segoe UI Variable Text", "Segoe UI",
+    Roboto, sans-serif;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
+    Georgia, serif;
+  --mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1e1b17;
+    --paper-sunk: #262219;
+    --paper-raised: #2a251e;
+    --ink: #ece7dd;
+    --ink-soft: #b2a996;
+    --ink-faint: #8c8373;
+    --rule: #39342c;
+    --rule-strong: #4a443a;
+
+    --accent: #67ac8a;
+    --accent-deep: #7fbd9d;
+    --accent-wash: #22312a;
+    --warn: #d7a44e;
+    --warn-wash: #342a1a;
+    --error: #e58a7f;
+    --error-wash: #352220;
+
+    --shadow-raise:
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      0 2px 8px rgba(0, 0, 0, 0.25);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* ---------- the wordmark ---------- */
+
+.wordmark {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.005em;
+  line-height: 1.2;
+}
+
+.wordmark i {
+  font-style: normal;
+  color: var(--ink-faint);
+  padding: 0 0.12em;
+}
+
+/* ---------- small-caps section label ---------- */
+
+.label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ---------- buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 13px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-raise);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.btn:hover:not([disabled]) {
+  background: var(--paper-sunk);
+}
+
+.btn:active:not([disabled]) {
+  box-shadow: none;
+  transform: translateY(0.5px);
+}
+
+.btn--primary {
+  color: #fffefb;
+  background: var(--accent);
+  border-color: var(--accent-deep);
+}
+
+.btn--primary:hover:not([disabled]) {
+  background: var(--accent-deep);
+}
+
+.btn[disabled] {
+  color: var(--ink-faint);
+  background: var(--paper-sunk);
+  border-color: var(--rule);
+  box-shadow: none;
+  cursor: default;
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn--primary {
+    color: #16211b;
+  }
+}
+
+.btn--quiet {
+  padding: 4px 6px;
+  font-size: 12px;
+  color: var(--accent);
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
+.btn--quiet:hover:not([disabled]) {
+  background: var(--accent-wash);
+}
+
+/* ---------- status line ---------- */
+
+.state {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.state__dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+}
+
+.state__dot[data-tone="ok"] { background: var(--accent); }
+.state__dot[data-tone="warn"] { background: var(--warn); }
+.state__dot[data-tone="error"] { background: var(--error); }
+
+.state__dot[data-tone="busy"] {
+  background: var(--accent);
+  animation: pulse 1.25s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .state__dot[data-tone="busy"] { animation: none; }
+}
+
+/* ---------- progress hairline ---------- */
+
+.meter {
+  height: 3px;
+  overflow: hidden;
+  background: var(--rule);
+  border-radius: 999px;
+}
+
+.meter__fill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  border-radius: inherit;
+  transition: width 200ms ease;
+}
+
+/* ---------- switch ---------- */
+
+.switch {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.switch input {
+  flex: 0 0 auto;
+  appearance: none;
+  position: relative;
+  width: 30px;
+  height: 18px;
+  margin: 1px 0 0;
+  background: var(--rule-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.switch input::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: #fffefb;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(35, 32, 27, 0.25);
+  transition: transform 140ms cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+
+.switch input:checked {
+  background: var(--accent);
+}
+
+.switch input:checked::after {
+  transform: translateX(12px);
+}
+
+.switch input[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.switch__text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.switch__note {
+  display: block;
+  margin-top: 1px;
+  font-size: 11.5px;
+  color: var(--ink-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switch input,
+  .switch input::after { transition: none; }
+}
+
+/* ---------- segmented control ---------- */
+
+.segmented {
+  display: flex;
+  padding: 2px;
+  background: var(--paper-sunk);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+}
+
+.segmented button {
+  flex: 1 1 0;
+  padding: 5px 4px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 120ms ease;
+}
+
+.segmented button:hover {
+  color: var(--ink);
+}
+
+.segmented button[aria-pressed="true"] {
+  color: var(--ink);
+  font-weight: 600;
+  background: var(--paper-raised);
+  border-color: var(--rule-strong);
+  box-shadow: var(--shadow-raise);
+}
+
+/* ---------- text inputs ---------- */
+
+.input,
+textarea.input {
+  width: 100%;
+  padding: 7px 9px;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+}
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+textarea.input {
+  min-height: 86px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+select.input {
+  appearance: none;
+  padding-right: 26px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 14px) calc(50% + 1px), calc(100% - 9px) calc(50% + 1px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.hint {
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
