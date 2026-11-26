@@ -3,10 +3,10 @@
     "message": "Magyar → English Page Translator"
   },
   "appShortName": {
-    "message": "Magyar → English"
+    "message": "HU → EN"
   },
   "appDescription": {
-    "message": "Reliably translates Hungarian web pages to English on-device, using Chrome's built-in Translator. No API key, no quota, nothing leaves your computer."
+    "message": "Translates Hungarian web pages to English on your own machine, with Chrome’s built-in model. No API key, no quota, no server."
   },
   "commandToggle": {
     "message": "Translate / restore the current page"

@@ -33,6 +33,11 @@ the `Translator` web API. The extension supplies the page handling around it.
 3. Click **Load unpacked** and select the `extension/` folder of this repo.
 4. Pin the extension so you can see its icon.
 
+If you change a file, press the reload arrow on the extension's card at
+`chrome://extensions` — there is no build step. A change to the service worker
+or the manifest needs that reload; a change to a content script also needs the
+page reloading.
+
 ### First run
 
 The very first time, Chrome has to download the Hungarian–English model. Chrome
@@ -191,6 +196,29 @@ they cannot.
 The catch: an offscreen document never has user activation, so it cannot trigger
 the first-time model download. That has to come from the popup or an in-page
 prompt. Once any context has pulled the model down, it is shared browser-wide.
+
+## Packaging and publishing
+
+```powershell
+npm run package
+```
+
+Writes `dist/hu-en-page-translator-<version>.zip` with `manifest.json` at the
+archive root, which is what the Chrome Web Store requires — zipping the
+`extension` folder itself puts `extension/manifest.json` inside the archive and
+is rejected. The script refuses to build if the 128×128 icon is missing, if the
+version is not one to four dot-separated numbers, if `default_locale` points at
+a `messages.json` that is not in the package, or if the manifest references an
+icon that is not there.
+
+`docs/store-listing.md` has the rest: the single-purpose statement, a
+justification for every permission, the data-usage answers, and the listing
+copy. `docs/privacy-policy.md` is the policy itself — the store requires a
+publicly reachable URL for one, because an extension that handles user data
+needs a policy even when it only ever stores that data locally.
+
+Two things the store will not let you skip: at least one screenshot at
+1280×800 or 640×400, and that privacy policy URL.
 
 ## Development
 

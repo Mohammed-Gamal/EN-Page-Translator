@@ -184,6 +184,21 @@ test('placeholders line up across locales', () => {
   }
 });
 
+test('the store-facing strings fit the Chrome Web Store limits', () => {
+  // Over these, the upload is rejected outright rather than warned about, and
+  // the limits apply to every locale, not just the default one.
+  const LIMITS = { appName: 75, appShortName: 12, appDescription: 132 };
+  for (const locale of LOCALES) {
+    const table = messages(locale);
+    for (const [key, limit] of Object.entries(LIMITS)) {
+      const text = table[key].message;
+      assert.ok(text, `${locale}/${key} is empty, which the store rejects`);
+      assert.ok(text.length <= limit,
+        `${locale}/${key} is ${text.length} characters, over the ${limit} limit`);
+    }
+  }
+});
+
 test('every message key the code asks for is defined', () => {
   // t('key', 'English fallback') and data-i18n="key" are the only two ways a
   // key is ever requested, so both are swept here.
@@ -228,9 +243,9 @@ test('the manifest asks for no permission the code never uses', () => {
     offscreen: /chrome\.offscreen\./,
     contextMenus: /chrome\.contextMenus\./,
     // These two have no namespace of their own: unlimitedStorage lifts the
-    // storage.local quota, and activeTab is what lets the popup read the URL of
-    // the tab it was opened from.
-    unlimitedStorage: /chrome\.storage\.local/,
+    // quota on the IndexedDB translation cache, and activeTab is what lets the
+    // popup read the URL of the tab it was opened from.
+    unlimitedStorage: /indexedDB\.open/,
     activeTab: /chrome\.tabs\.query/,
   };
   for (const permission of manifest.permissions) {

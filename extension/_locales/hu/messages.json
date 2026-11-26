@@ -3,10 +3,10 @@
     "message": "Magyar → angol oldalfordító"
   },
   "appShortName": {
-    "message": "Magyar → angol"
+    "message": "HU → EN"
   },
   "appDescription": {
-    "message": "Magyar weboldalakat fordít angolra a számítógépeden, a Chrome beépített fordítójával. Nincs API-kulcs, nincs kvóta, semmi nem hagyja el a gépedet."
+    "message": "Magyar weboldalakat fordít angolra a saját gépeden, a Chrome beépített modelljével. Nincs API-kulcs, nincs kvóta, nincs szerver."
   },
   "commandToggle": {
     "message": "Oldal lefordítása / visszaállítása"

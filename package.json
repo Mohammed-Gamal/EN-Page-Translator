@@ -5,6 +5,7 @@
   "description": "Chrome/Edge extension translating Hungarian pages to English with the browser's on-device Translator model.",
   "scripts": {
     "test": "node --test \"tests/*.test.js\"",
-    "serve": "python -m http.server 8733 --bind 127.0.0.1"
+    "serve": "python -m http.server 8733 --bind 127.0.0.1",
+    "package": "node tools/package.js"
   }
 }
