@@ -8,7 +8,7 @@
 (function (HUEN) {
   'use strict';
 
-  const { engine, MSG, STATUS, statusInfo, sendMessage, sendToTab, t } = HUEN;
+  const { engine, browser, MSG, STATUS, statusInfo, sendMessage, sendToTab, t } = HUEN;
 
   /* The content script pushes a status message on every change, and the popup
      is an extension page, so it receives them. The interval below is only a
@@ -59,6 +59,13 @@
      missing even on a page the content script decided not to touch — otherwise
      the only way to get the model is to find a Hungarian page first. */
   let availability = 'unknown';
+  /* Whether this browser has the Translator API at all, as opposed to
+     having it but not the model. Null until the check has run. */
+  let engineSupported = null;
+  /* What the service worker says this page will actually use:
+     'builtin', 'cloud', or 'cloud-unconfigured'. */
+  let engineChoice = 'builtin';
+  let missingApiReason = '';
 
   function modelMissing() {
     return availability === 'downloadable' || availability === 'downloading';
@@ -106,6 +113,22 @@
 
   function renderState() {
     const state = pageState;
+
+    /* No Translator API in this browser. Nothing the page reports can
+       change that, and nothing either button does can work, so this
+       takes priority over the page's own status — which for a frame
+       that failed through the offscreen path is the unhelpful
+       "Something went wrong". */
+    if (engineSupported === false) {
+      el.stateDot.setAttribute('data-tone', 'error');
+      el.stateText.textContent = t('stateNoEngine', 'No built-in translator');
+      setDetail(missingApiReason);
+      el.translate.disabled = true;
+      el.restore.disabled = true;
+      el.download.hidden = true;
+      setMeter(null);
+      return;
+    }
 
     if (!state) {
       el.stateDot.setAttribute('data-tone', 'neutral');
@@ -171,13 +194,19 @@
   /* ---------- data ---------- */
 
   async function pullState() {
-    pageState = await sendToTab(tab && tab.id, { type: MSG.GET_STATE });
+    /* The top frame only. Every frame runs a content script and answers
+       this, and the first reply is the one that counts, so without this a
+       widget iframe reports on the whole page's behalf. */
+    pageState = await sendToTab(tab && tab.id, { type: MSG.GET_STATE },
+      HUEN.TOP_FRAME);
     renderState();
     schedulePoll();
   }
 
   function schedulePoll() {
     if (pollTimer !== null) clearTimeout(pollTimer);
+    // Nothing can change while the API is absent, so stop asking.
+    if (engineSupported === false) return;
     const busy = pageState && (pageState.status === STATUS.TRANSLATING ||
       pageState.status === STATUS.DOWNLOADING || pageState.status === STATUS.CHECKING);
     pollTimer = setTimeout(pullState, busy ? POLL_BUSY : POLL_IDLE);
@@ -190,17 +219,45 @@
   }
 
   async function readEngine() {
-    if (!engine.isSupported()) {
-      setEngine(t('engineUnavailable', 'unavailable'), 'error');
-      el.translate.disabled = true;
-      el.downloadBtn.disabled = true;
+    const builtinAvailable = engine.isSupported();
+    const res = await sendMessage({
+      type: MSG.GET_ENGINE,
+      builtinAvailable,
+    });
+    engineChoice = (res && res.engine) || 'builtin';
+
+    /* A configured service works everywhere, so the absence of a built-in
+       model stops being the headline. */
+    if (engineChoice === 'cloud') {
+      engineSupported = true;
+      setEngine(t('engineCloudPill', 'service'), 'ok');
       el.download.hidden = true;
-      el.stateDot.setAttribute('data-tone', 'error');
-      el.stateText.textContent = 'No built-in translator';
-      setDetail('Desktop Chrome 138+ or Edge 148+ is required. The built-in ' +
-        'AI APIs do not exist on mobile.');
+      return true;
+    }
+    if (engineChoice === 'cloud-unconfigured') {
+      engineSupported = false;
+      missingApiReason = t('cloudNeedsSetup',
+        'Set to use a translation service, but none is set up yet. '
+        + 'Open All settings to add one.');
+      setEngine(t('engineNeedsSetup', 'needs setup'), 'warn');
+      renderState();
       return false;
     }
+
+    if (!builtinAvailable) {
+      engineSupported = false;
+      /* Name the browser and say why it has no translator — telling someone
+         on Chromium 156 that they need "Chrome 138+" is not an answer they
+         can act on — and then point at the way round it. */
+      missingApiReason = browser.explainMissingApi(await browser.describe(), t) +
+        ' ' + t('cloudIsAnOption',
+          'A translation service can be used instead \u2014 see All settings.');
+      setEngine(t('engineUnavailable', 'unavailable'), 'error');
+      el.downloadBtn.disabled = true;
+      renderState();
+      return false;
+    }
+    engineSupported = true;
 
     /* Check the pair the page actually needs. With auto-detection on, a
        German page needs de>en, and reporting on hu>en would tell the

@@ -44,6 +44,12 @@
     status: STATUS.IDLE,
     message: '',
     downloadPct: 0,
+    /* Which translator this frame is using, decided by the service worker
+       from the settings and from whether the API exists here at all.
+       'builtin' is the only one we can call directly; everything else is
+       routed through the service worker, which is the only context that
+       holds the API key. */
+    engineChoice: 'builtin',
     /* The Translator API needs a secure context. In a content script the
        isolated world inherits the page's origin, so on a plain http:// page the
        global is simply absent and the work has to be proxied through the
@@ -95,12 +101,31 @@
   };
 
   /* Streaming only exists on the direct path. Pushing partial results back
-     through runtime messaging would cost a round trip per chunk, which is more
-     than the progressive rendering is worth. */
-  if (state.useLocalEngine) {
-    transport.translateLong = function (text, onPartial) {
-      return engine.translateLong(state.source, target(), text, onPartial);
-    };
+     through runtime messaging would cost a round trip per chunk, which is
+     more than the progressive rendering is worth, and a cloud provider
+     returns a whole batch at once anyway. Installed in resolveEngine()
+     once we know the built-in model is the one being used. */
+  function installStreaming() {
+    if (state.useLocalEngine) {
+      transport.translateLong = function (text, onPartial) {
+        return engine.translateLong(state.source, target(), text, onPartial);
+      };
+    } else {
+      delete transport.translateLong;
+    }
+  }
+
+  /* Ask the service worker which translator applies here. It knows the
+     settings and whether a provider is configured; this frame only knows
+     whether the browser has a built-in model. */
+  async function resolveEngine() {
+    const res = await sendMessage({
+      type: MSG.GET_ENGINE,
+      builtinAvailable: engine.isSupported(),
+    });
+    state.engineChoice = (res && res.engine) || 'builtin';
+    state.useLocalEngine = state.engineChoice === 'builtin' && engine.isSupported();
+    installStreaming();
   }
 
   function setStatus(status, message) {
@@ -126,7 +151,8 @@
       pair: pairName(),
       pageScore: Number(state.pageScore.toFixed(3)),
       detected: state.detected,
-      engine: state.useLocalEngine ? 'page' : 'offscreen',
+      engine: state.engineChoice,
+      engineDirect: state.useLocalEngine,
       progress: state.queue ? state.queue.progress : { completed: 0, total: 0 },
       stats: Object.assign({}, applier.stats),
       downloadPct: state.downloadPct,
@@ -193,16 +219,61 @@
     const source = state.source;
     const to = target();
 
+    /* Belt and braces. detect.js should never hand over a pair like this,
+       but if it ever does, the engine answers with a hard error that
+       reads as a browser fault rather than what it is: nothing here to
+       translate. */
+    if (!source || source === to) {
+      setStatus(STATUS.SKIPPED, t('skippedSameLanguage',
+        'This is already in $1.', [languages.nameOf(to)]));
+      return false;
+    }
+    if (!languages.isKnown(source)) {
+      setStatus(STATUS.SKIPPED, t('skippedUnknownLanguage',
+        '“$1” is not a language this browser can translate.', [source]));
+      return false;
+    }
+
     if (!state.useLocalEngine) {
       const res = await sendMessage({ type: MSG.ENSURE_MODEL, source, target: to });
       if (res && res.ok) return true;
+      if (res && res.code === ERR.CLOUD_UNCONFIGURED) {
+        /* Not a browser fault and not something a click here can fix:
+           the reader has to go and set a provider up. */
+        setStatus(STATUS.ERROR, res.error);
+        if (isTopFrame) {
+          overlay.showCard({
+            tone: 'error',
+            eyebrow: t('cardSetupNeeded', 'Setup needed'),
+            text: res.error,
+          });
+        }
+        return false;
+      }
       if (res && res.code === ERR.NEEDS_GESTURE) {
         askForClick(t('cardNeedsGesture',
           'A one-time language model download is needed. Chrome asks for a ' +
           'click before it will start one.'));
         return false;
       }
-      setStatus(STATUS.ERROR, (res && res.error) || 'No on-device translator available.');
+      /* The offscreen document is an extension page, so it is a secure
+         context and does have the API whenever the browser does. If it
+         reports UNSUPPORTED, the browser itself has no Translator at
+         all, and "something went wrong" is the wrong thing to say. */
+      if (!res || res.code === ERR.UNSUPPORTED) {
+        setStatus(STATUS.ERROR, t('errorNoEngine',
+          'This browser has no built-in translator. Desktop Chrome 138 or '
+          + 'later, or Edge 148 or later, is required.'));
+        if (isTopFrame) {
+          overlay.showCard({
+            tone: 'error',
+            eyebrow: t('cardUnavailable', 'Unavailable'),
+            text: state.message,
+          });
+        }
+        return false;
+      }
+      setStatus(STATUS.ERROR, res.error || 'No on-device translator available.');
       return false;
     }
 
@@ -498,6 +569,9 @@
 
     [MSG.SETTINGS_CHANGED]: function (message) {
       state.settings = HUEN.normalizeSettings(message.settings);
+      // Switching provider, or pasting a key, changes which translator
+      // this frame should be using.
+      resolveEngine();
       return { ok: true };
     },
   });
@@ -508,6 +582,7 @@
     const res = await sendMessage({ type: MSG.GET_SETTINGS });
     state.settings = HUEN.normalizeSettings(res && res.settings);
     state.source = languages.base(state.settings.sourceLanguage);
+    await resolveEngine();
 
     if (!HUEN.shouldAutoTranslate(state.settings, location.hostname)) {
       state.reason = state.settings.mode === 'manual'

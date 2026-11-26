@@ -23,6 +23,19 @@
     autoDetectSource: true,
     /* Terms to leave exactly as they are; see shared/glossary.js. */
     glossary: [],
+    /* Which translator to use.
+         auto    - the browser's built-in model where it exists, the cloud
+                   provider where it does not and one is configured
+         builtin - only the browser's own model
+         cloud   - only the configured provider, even in Chrome */
+    engine: 'auto',
+    cloudProvider: 'deepl',
+    /* Stored in chrome.storage.local, which is not encrypted but is not
+       reachable from any web page. The key is never sent to a content
+       script and never leaves the service worker. */
+    cloudApiKey: '',
+    cloudBaseUrl: '',
+    cloudModel: '',
     translateAttributes: true,
     translateTitle: true,
     showOriginalOnHover: true,
@@ -34,6 +47,8 @@
   };
 
   const MODES = ['auto', 'allowlist', 'manual'];
+  const ENGINES = ['auto', 'builtin', 'cloud'];
+  const CLOUD_PROVIDERS = ['deepl', 'openai'];
   const SETTINGS_KEY = 'settings';
 
   const LIMITS = {
@@ -82,6 +97,18 @@
     return out;
   }
 
+  function normalizeBaseUrl(value) {
+    const text = String(value || '').trim().replace(/\/+$/, '');
+    if (!text) return '';
+    try {
+      const url = new URL(text);
+      if (url.protocol !== 'https:' && url.protocol !== 'http:') return '';
+      return text;
+    } catch (_) {
+      return '';
+    }
+  }
+
   function normalize(raw) {
     const out = Object.assign({}, DEFAULTS, raw || {});
     out.enabled = out.enabled !== false;
@@ -89,6 +116,15 @@
     out.denylist = normalizeList(out.denylist);
     out.glossary = normalizeTerms(out.glossary);
     if (MODES.indexOf(out.mode) === -1) out.mode = DEFAULTS.mode;
+    if (ENGINES.indexOf(out.engine) === -1) out.engine = DEFAULTS.engine;
+    if (CLOUD_PROVIDERS.indexOf(out.cloudProvider) === -1) {
+      out.cloudProvider = DEFAULTS.cloudProvider;
+    }
+    out.cloudApiKey = String(out.cloudApiKey || '').trim();
+    out.cloudModel = String(out.cloudModel || '').trim();
+    /* A base URL that is not http(s) would be a way to point the key at
+       something unexpected, so anything else is discarded. */
+    out.cloudBaseUrl = normalizeBaseUrl(out.cloudBaseUrl);
     out.minScore = clampNumber(out.minScore, DEFAULTS.minScore, LIMITS.minScore);
     out.cacheLimit = Math.round(
       clampNumber(out.cacheLimit, DEFAULTS.cacheLimit, LIMITS.cacheLimit));
@@ -136,6 +172,9 @@
 
   HUEN.DEFAULTS = DEFAULTS;
   HUEN.MODES = MODES;
+  HUEN.ENGINES = ENGINES;
+  HUEN.CLOUD_PROVIDERS = CLOUD_PROVIDERS;
+  HUEN.normalizeBaseUrl = normalizeBaseUrl;
   HUEN.SETTINGS_KEY = SETTINGS_KEY;
   HUEN.normalizeSettings = normalize;
   HUEN.normalizeHost = normalizeHost;

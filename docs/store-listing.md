@@ -64,6 +64,12 @@ few times.
 > • Right-click a passage to translate just that
 > • Alt+T to switch between the translation and the original
 >
+> WORKS WITHOUT A BUILT-IN MODEL
+> Browsers without Chrome's built-in translator, and anyone who wants better
+> output than it can give, can point the extension at DeepL or at any
+> OpenAI-compatible model, including one running on their own machine. Off by
+> default; the page text goes to that service while it is on.
+>
 > ALSO WORKS ON OTHER LANGUAGES
 > Detection is on by default, so any language your browser's model supports is
 > translated into English, not only Hungarian.
@@ -110,8 +116,9 @@ actual behaviour "may be removed from the Store".
 ### Single purpose
 
 > Translating the text of web pages from Hungarian (or another detected
-> language) into English, using the translation model built into the browser,
-> and showing the original text on request.
+> language) into English — using the translation model built into the browser,
+> or a translation service the user configures — and showing the original text
+> on request.
 
 ### Permission justifications
 
@@ -122,7 +129,7 @@ actual behaviour "may be removed from the Store".
 | `offscreen` | The browser's built-in Translator API requires a secure context. A content script inherits the page's origin, so on a plain http:// page the API is unavailable. The extension creates an offscreen document, which is a secure extension-origin context, and performs the translation there. It is used for nothing else. |
 | `activeTab` | Lets the popup read the hostname of the tab it was opened from, so it can offer "always translate this site" and "never translate this site" for the site the user is actually looking at. |
 | `contextMenus` | Adds two right-click entries: "Translate this page" and "Translate the selected text". |
-| Host permission `http://*/*`, `https://*/*` | The extension must read the text of the page the user is reading and write the translation back into it. A translator cannot know in advance which sites a user will want translated, so access cannot be narrowed to a list of hosts. No page content is transmitted anywhere — the extension makes no network requests of any kind. |
+| Host permission `http://*/*`, `https://*/*` | Two uses. First, the extension must read the text of the page the user is reading and write the translation back into it; a translator cannot know in advance which sites a user will want translated, so access cannot be narrowed to a list of hosts. Second, when the user has configured a translation service, the extension's background page calls that service's HTTPS endpoint. On the default setting no page content is transmitted anywhere. |
 
 > **`activeTab` note.** With the broad host permissions above, `activeTab` is
 > only doing work on `file://` pages. If a reviewer pushes back on permission
@@ -141,8 +148,14 @@ inside the package.
 
 ### Data usage
 
-The extension reads page text and stores translated phrases locally. It
-transmits nothing.
+The extension reads page text and stores translated phrases locally. On the
+default setting it transmits nothing. If the user configures a translation
+service, the text being translated is sent to that service.
+
+**This changes the answer compared with an on-device-only build.** Website
+content can leave the device, so it must be disclosed as such even though it is
+off by default and user-configured. Do not be tempted to answer for the default
+setting only.
 
 Google's User Data FAQ states that disclosure is required **"even when data is
 processed or stored locally on a user's device and is not transmitted to
@@ -151,9 +164,9 @@ whether local-only processing should tick the "collected" box, so this is a
 judgement call and ultimately yours to make. The safe reading, and the one
 this listing copy assumes:
 
-- **Tick "Website content"** — the extension genuinely reads and uses the
-  content of pages, and under-disclosing is the error that gets extensions
-  removed. Over-disclosing is not.
+- **Tick "Website content"** — the extension reads and uses page content, and
+  transmits it when a service is configured. Under-disclosing is the error that
+  gets extensions removed; over-disclosing is not.
 - **Leave every other category unticked** — no personally identifiable
   information, no authentication information, no financial information, no
   health information, no personal communications, no location, no web history,
@@ -161,7 +174,9 @@ this listing copy assumes:
 
 Then tick all three Limited Use certifications. Each is true here:
 
-- the data is not sold to third parties — nothing is transmitted at all
+- the data is not sold to third parties — it is sent only to the translation
+  service the user chose, for the sole purpose of translating it, and to nobody
+  else
 - it is not used or transferred for any purpose unrelated to the single
   purpose above
 - it is not used or transferred to determine creditworthiness or for lending

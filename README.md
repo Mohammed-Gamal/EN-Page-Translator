@@ -20,6 +20,8 @@ A Chrome/Edge extension that translates Hungarian web pages into English
 | | |
 |---|---|
 | Browser | Desktop **Chrome 138+** or **Edge 148+** |
+| Other browsers | Brave, Opera, Vivaldi and other Chromium forks install the same package and work once a **translation service** is configured (see below). Firefox and Safari need packaging work that has not been done. |
+| Not supported for the built-in model | **Brave, Opera, Vivaldi and other Chromium forks.** The built-in AI stack is a Chrome feature, not a Chromium one, so these ship without the `Translator` global however recent they are. They also report themselves as Chrome in the user agent, so the extension checks `navigator.brave.isBrave()` and the UA tokens to name the browser rather than claiming the version is too old. |
 | Platform | Windows 10/11, macOS 13+, Linux, ChromeOS. **Not available on mobile.** |
 | Disk | Chrome needs free space on the drive holding your browser profile to store the model |
 
@@ -196,6 +198,42 @@ they cannot.
 The catch: an offscreen document never has user activation, so it cannot trigger
 the first-time model download. That has to come from the popup or an in-page
 prompt. Once any context has pulled the model down, it is shared browser-wide.
+
+## Translators
+
+Three ways to translate, chosen under **All settings → Translator**.
+
+| | Cost | Setup | Browsers | Quality |
+|---|---|---|---|---|
+| The browser's own model *(default)* | free | none | Chrome 138+, Edge 148+ | NMT, about Google Translate |
+| DeepL | free tier: 500k characters a month | an API key | all | better than the built-in model on Hungarian |
+| An OpenAI-compatible model | pay per use, or free on your own hardware | a key, or a local server | all | the only one that reads as a native speaker would write |
+
+`auto`, the default, uses the browser's own model wherever it exists and falls
+back to a service only where it does not. That keeps the free, private,
+zero-setup path as the normal one, and means a browser without the built-in
+model is no longer a dead end.
+
+The OpenAI-compatible option talks to anything speaking the chat-completions
+protocol: OpenAI, Groq, Together, OpenRouter, or a local Ollama or LM Studio
+server at `http://localhost:11434/v1`, which needs no key and keeps every word
+on your machine.
+
+**Every request goes out from the service worker**, never from a content
+script. The API key is therefore never present in a page's process, and a
+hostile page cannot read it or spend it. It is stored unencrypted in
+`chrome.storage.local`, because extension storage has nowhere to keep a secret
+the browser itself could not read.
+
+What makes an LLM worth the money here is the prompt, in
+`src/background/cloud.js`: it asks for native word order and matched register,
+and it forbids touching the `{1}`, `[[1]]` and `{{G0}}` placeholders the queue
+uses to rebuild a sentence out of its DOM nodes. If a model mangles them
+anyway the existing fallbacks catch it — the second marker syntax, then
+node-by-node — so bad output degrades rather than corrupting the page.
+
+**Using a service sends the text of the pages you translate to it.** That is
+the trade, it is off by default, and `docs/privacy-policy.md` says so plainly.
 
 ## Packaging and publishing
 

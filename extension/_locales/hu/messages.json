@@ -282,7 +282,7 @@
     "message": "Összes beállítás visszaállítása"
   },
   "optionsResetHint": {
-    "message": "Az oldallistákkal és a szójegyzékkel együtt. A megjegyzett kifejezések megmaradnak."
+    "message": "Az oldallistákkal, a szójegyzékkel és az API-kulccsal együtt. A megjegyzett kifejezések megmaradnak."
   },
   "optionsUnsaved": {
     "message": "Nem mentett módosításaid vannak."
@@ -313,5 +313,107 @@
   },
   "diagVersion": {
     "message": "$1 verzió"
+  },
+  "stateNoEngine": {
+    "message": "Nincs beépített fordító"
+  },
+  "errorNoEngine": {
+    "message": "Ebben a böngészőben nincs beépített fordító. Asztali Chrome 138 vagy újabb, illetve Edge 148 vagy újabb szükséges."
+  },
+  "unsupportedFork": {
+    "message": "A(z) $1 nem tartalmazza a Chrome beépített fordítóját. A kiegészítőhöz asztali Chrome 138 vagy újabb, illetve Edge 148 vagy újabb kell."
+  },
+  "unsupportedOld": {
+    "message": "Ez $1 $2. A beépített fordító a Chrome 138-ban és az Edge 148-ban jelent meg, így ez a verzió túl régi."
+  },
+  "unsupportedUnknown": {
+    "message": "A(z) $1 $2 verzióban lennie kellene beépített fordítónak, de nem kínálja fel. Ellenőrizd a beépített AI kapcsolókat a chrome://flags oldalon, és hogy van-e elég hely a profilod meghajtóján a modellnek."
+  },
+  "skippedSameLanguage": {
+    "message": "Ez már $1 nyelvű."
+  },
+  "skippedUnknownLanguage": {
+    "message": "A(z) „$1” nem olyan nyelv, amelyet ez a böngésző le tud fordítani."
+  },
+  "errorCloudUnconfigured": {
+    "message": "Még nincs beállítva fordítószolgáltatás. Add hozzá a kiegészítő beállításaiban."
+  },
+  "cardSetupNeeded": {
+    "message": "Beállítás szükséges"
+  },
+  "cloudTestNoKey": {
+    "message": "Nincs megadva API-kulcs."
+  },
+  "cloudTesting": {
+    "message": "Tesztelés…"
+  },
+  "cloudTestOk": {
+    "message": "Működik — a „Jó napot kívánok!” így jött vissza: „$1”"
+  },
+  "cloudTestFailed": {
+    "message": "Nem sikerült: $1"
+  },
+  "cloudNeedsSetup": {
+    "message": "Fordítószolgáltatásra van állítva, de még nincs beállítva egy sem. Nyisd meg az Összes beállítást, és adj hozzá egyet."
+  },
+  "cloudIsAnOption": {
+    "message": "Helyette használható fordítószolgáltatás is — lásd az Összes beállítást."
+  },
+  "engineCloudPill": {
+    "message": "szolgáltatás"
+  },
+  "engineNeedsSetup": {
+    "message": "beállítás kell"
+  },
+  "optionsTranslator": {
+    "message": "Fordító"
+  },
+  "optionsEngine": {
+    "message": "Fordítás ezzel"
+  },
+  "engineAuto": {
+    "message": "A böngésző, vagy szolgáltatás, ha nem tudja"
+  },
+  "engineBuiltinOnly": {
+    "message": "Csak a böngésző saját modellje"
+  },
+  "engineCloudOnly": {
+    "message": "Csak fordítószolgáltatás"
+  },
+  "optionsEngineHint": {
+    "message": "A Chrome 138+ és az Edge 148+ beépített fordítómodellt tartalmaz: ingyenes, offline, és semmi nem hagyja el a gépedet. Más böngészőkben nincs ilyen, ott egy szolgáltatás pótolja. A szolgáltatás jobban is fordít a beépített modellnél, cserébe elküldi neki az oldal szövegét."
+  },
+  "optionsProvider": {
+    "message": "Szolgáltatás"
+  },
+  "providerOpenai": {
+    "message": "OpenAI-kompatibilis modell"
+  },
+  "providerDeeplHint": {
+    "message": "Jó magyarból és gyors. Az ingyenes csomag havi 500 000 karaktert fed le; a deepl.com-ról származó, :fx végű kulcs ingyenes, és a kiegészítő magától felismeri."
+  },
+  "providerOpenaiHint": {
+    "message": "Az egyetlen olyan lehetőség, amely úgy olvasható, mintha ember írta volna, mert a modellnek megmondható a stílus és a szóhasználat. Lassabb, és oldalanként fizetni kell érte, hacsak nem a saját gépeden futó modellre mutatsz vele."
+  },
+  "optionsApiKey": {
+    "message": "API-kulcs"
+  },
+  "optionsApiKeyHint": {
+    "message": "Ebben a böngészőprofilban marad, és csak a kiegészítő háttéroldala használja. Weboldal soha nem kapja meg, és a választott szolgáltatáson kívül sehová nem megy el."
+  },
+  "optionsBaseUrl": {
+    "message": "Végpont"
+  },
+  "optionsModel": {
+    "message": "Modell"
+  },
+  "optionsOpenaiHint": {
+    "message": "Bármi működik, ami beszéli az OpenAI chat-completions protokollt: OpenAI, Groq, Together, OpenRouter, vagy egy helyi Ollama/LM Studio kiszolgáló a http://localhost:11434/v1 címen, amelyhez nem kell kulcs, és minden a gépeden marad."
+  },
+  "optionsTestCloud": {
+    "message": "Kapcsolat tesztelése"
+  },
+  "optionsCloudPrivacy": {
+    "message": "Amíg szolgáltatást használsz, a lefordított oldalak szövege elmegy hozzá. Ez a jobb fordítás ára, és ezért van előnyben a beépített modell, amikor elérhető."
   }
 }

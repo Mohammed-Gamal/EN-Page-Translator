@@ -24,6 +24,8 @@
     CACHE_CLEAR: 'huen:cache:clear',
     TRANSLATE: 'huen:translate',
     ENSURE_MODEL: 'huen:model:ensure',
+    GET_ENGINE: 'huen:engine:get',
+    TEST_CLOUD: 'huen:cloud:test',
     REPORT_STATUS: 'huen:status:report',
 
     // service worker / UI -> content script
@@ -105,10 +107,20 @@
     NEEDS_GESTURE: 'NEEDS_GESTURE',
     PAIR_UNSUPPORTED: 'PAIR_UNSUPPORTED',
     CREATE_FAILED: 'CREATE_FAILED',
+    /* Cloud provider failures. AUTH and QUOTA are worth stopping for —
+       no other string will fare better — while a transient network or
+       rate-limit problem is not. */
+    CLOUD_AUTH: 'CLOUD_AUTH',
+    CLOUD_QUOTA: 'CLOUD_QUOTA',
+    CLOUD_FAILED: 'CLOUD_FAILED',
+    CLOUD_UNCONFIGURED: 'CLOUD_UNCONFIGURED',
   };
 
   /* A failure the caller cannot recover from by retrying a different string. */
-  const FATAL_CODES = new Set([ERR.UNSUPPORTED, ERR.NEEDS_GESTURE, ERR.PAIR_UNSUPPORTED]);
+  const FATAL_CODES = new Set([
+    ERR.UNSUPPORTED, ERR.NEEDS_GESTURE, ERR.PAIR_UNSUPPORTED,
+    ERR.CLOUD_AUTH, ERR.CLOUD_QUOTA, ERR.CLOUD_UNCONFIGURED,
+  ]);
 
   function isFatalCode(code) {
     return FATAL_CODES.has(code);
@@ -135,11 +147,11 @@
 
   /* Same contract, aimed at one tab. A tab with no content script (chrome://,
      the web store, a PDF viewer) resolves to null rather than throwing. */
-  function sendToTab(tabId, message) {
+  function sendToTab(tabId, message, options) {
     return new Promise(function (resolve) {
       if (!tabId || typeof chrome.tabs === 'undefined') return resolve(null);
       try {
-        chrome.tabs.sendMessage(tabId, message, function (response) {
+        chrome.tabs.sendMessage(tabId, message, options || {}, function (response) {
           void chrome.runtime.lastError;
           resolve(response === undefined ? null : response);
         });
@@ -183,7 +195,15 @@
   HUEN.statusInfo = statusInfo;
   HUEN.ERR = ERR;
   HUEN.isFatalCode = isFatalCode;
+  /* Pass as sendToTab's options to reach only the main document.
+
+     Without it the message goes to every frame and the first reply wins,
+     which for a question like "what is this page's status?" means a
+     reCAPTCHA or cookie-consent iframe can answer on the page's behalf. */
+  const TOP_FRAME = { frameId: 0 };
+
   HUEN.sendMessage = sendMessage;
   HUEN.sendToTab = sendToTab;
+  HUEN.TOP_FRAME = TOP_FRAME;
   HUEN.serve = serve;
 })(globalThis.HUEN);

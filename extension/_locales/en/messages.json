@@ -282,7 +282,7 @@
     "message": "Reset every setting"
   },
   "optionsResetHint": {
-    "message": "Site lists and glossary included. Remembered phrases are kept."
+    "message": "Site lists, glossary and API key included. Remembered phrases are kept."
   },
   "optionsUnsaved": {
     "message": "You have unsaved changes."
@@ -313,5 +313,107 @@
   },
   "diagVersion": {
     "message": "version $1"
+  },
+  "stateNoEngine": {
+    "message": "No built-in translator"
+  },
+  "errorNoEngine": {
+    "message": "This browser has no built-in translator. Desktop Chrome 138 or later, or Edge 148 or later, is required."
+  },
+  "unsupportedFork": {
+    "message": "$1 does not provide the translator that is built into Chrome. This extension needs desktop Chrome 138 or later, or Edge 148 or later."
+  },
+  "unsupportedOld": {
+    "message": "This is $1 $2. The built-in translator arrived in Chrome 138 and Edge 148, so this version is too old."
+  },
+  "unsupportedUnknown": {
+    "message": "$1 $2 should have the built-in translator but is not offering it. Check the built-in AI flags at chrome://flags, and that the drive holding your browser profile has room for the model."
+  },
+  "skippedSameLanguage": {
+    "message": "This is already in $1."
+  },
+  "skippedUnknownLanguage": {
+    "message": "“$1” is not a language this browser can translate."
+  },
+  "errorCloudUnconfigured": {
+    "message": "No translation service is set up yet. Add one in the extension settings."
+  },
+  "cardSetupNeeded": {
+    "message": "Setup needed"
+  },
+  "cloudTestNoKey": {
+    "message": "No API key set."
+  },
+  "cloudTesting": {
+    "message": "Testing…"
+  },
+  "cloudTestOk": {
+    "message": "Works — “Jó napot kívánok!” came back as “$1”"
+  },
+  "cloudTestFailed": {
+    "message": "Failed: $1"
+  },
+  "cloudNeedsSetup": {
+    "message": "Set to use a translation service, but none is set up yet. Open All settings to add one."
+  },
+  "cloudIsAnOption": {
+    "message": "A translation service can be used instead — see All settings."
+  },
+  "engineCloudPill": {
+    "message": "service"
+  },
+  "engineNeedsSetup": {
+    "message": "needs setup"
+  },
+  "optionsTranslator": {
+    "message": "Translator"
+  },
+  "optionsEngine": {
+    "message": "Translate with"
+  },
+  "engineAuto": {
+    "message": "The browser, or a service if it cannot"
+  },
+  "engineBuiltinOnly": {
+    "message": "Only the browser's own model"
+  },
+  "engineCloudOnly": {
+    "message": "Only a translation service"
+  },
+  "optionsEngineHint": {
+    "message": "Chrome 138+ and Edge 148+ have a translation model built in: free, offline, and nothing leaves your machine. Other browsers do not, and a service fills the gap there. A service also translates better than the built-in model, at the cost of sending page text to it."
+  },
+  "optionsProvider": {
+    "message": "Service"
+  },
+  "providerOpenai": {
+    "message": "OpenAI-compatible model"
+  },
+  "providerDeeplHint": {
+    "message": "Good on Hungarian and fast. The free tier covers 500,000 characters a month; a key from deepl.com ending in :fx is a free one and is detected automatically."
+  },
+  "providerOpenaiHint": {
+    "message": "The only option that reads like a person wrote it, because the model can be told about register and idiom. Slower and it costs per page, unless you point it at a model running on your own machine."
+  },
+  "optionsApiKey": {
+    "message": "API key"
+  },
+  "optionsApiKeyHint": {
+    "message": "Kept in this browser profile and used only by the extension's background page. It is never given to a web page, and never sent anywhere except the service you chose."
+  },
+  "optionsBaseUrl": {
+    "message": "Endpoint"
+  },
+  "optionsModel": {
+    "message": "Model"
+  },
+  "optionsOpenaiHint": {
+    "message": "Anything speaking the OpenAI chat-completions protocol works: OpenAI, Groq, Together, OpenRouter, or a local Ollama or LM Studio server at http://localhost:11434/v1, which needs no key and keeps everything on your machine."
+  },
+  "optionsTestCloud": {
+    "message": "Test the connection"
+  },
+  "optionsCloudPrivacy": {
+    "message": "While a service is in use, the text of the pages you translate is sent to it. That is the trade for better translation, and it is why the built-in model is preferred whenever it is available."
   }
 }

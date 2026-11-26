@@ -27,6 +27,7 @@ function loadHUEN() {
     'shared/protocol.js',
     'shared/settings.js',
     'shared/languages.js',
+    'shared/browser.js',
     'shared/lang.js',
     'shared/hash.js',
     'shared/glossary.js',
@@ -38,10 +39,13 @@ function loadHUEN() {
     const code = fs.readFileSync(path.join(ROOT, file), 'utf8');
     vm.runInContext(code, sandbox, { filename: file });
   }
-  return sandbox.HUEN;
+  return sandbox;
 }
 
-const HUEN = loadHUEN();
+/* The sandbox is kept as well as HUEN: browser.js reads the global
+   `navigator`, which the sandbox has to be given before each case. */
+const SANDBOX = loadHUEN();
+const HUEN = SANDBOX.HUEN;
 
 test('buildJoined / splitJoined round-trips an untouched string', () => {
   const texts = ['A', 'kutya', 'fut a kertben'];
@@ -441,4 +445,90 @@ test('a glossary fingerprint changes when the terms change', () => {
   assert.strictEqual(a, c, 'the same terms in another order are the same glossary');
   assert.strictEqual(HUEN.glossary.create([]).fingerprint, '',
     'no glossary means no salt, so plain entries stay reusable');
+});
+
+/* ---------- telling the user why there is no translator ---------- */
+
+/* browser.describe() reads navigator, which the sandbox does not have, so each
+   case installs one. The user agents below are real: every Chromium fork
+   claims to be Chrome on purpose, which is exactly why the user agent alone
+   cannot answer "which browser is this?". */
+const UA = {
+  chrome: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+    '(KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36',
+  edge: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+    '(KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36 Edg/156.0.0.0',
+  opera: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+    '(KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36 OPR/142.0.0.0',
+  oldChrome: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+    '(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+};
+
+function describeAs(userAgent, isBrave) {
+  const navigator = { userAgent };
+  if (isBrave !== undefined) navigator.brave = { isBrave: async () => isBrave };
+  SANDBOX.navigator = navigator;
+  return HUEN.browser.describe();
+}
+
+test('Brave is identified despite claiming to be Chrome', async () => {
+  // This is the case that sent a real user to the issue tracker: the user
+  // agent says Chrome 156, so version checks pass and the API is still absent.
+  const info = await describeAs(UA.chrome, true);
+  assert.strictEqual(info.name, 'Brave');
+  assert.ok(info.isOtherChromium, 'Brave is not Chrome and not Edge');
+  assert.ok(!info.tooOld, 'the Chromium version is current; age is not the problem');
+});
+
+test('Chrome, Edge and Opera are told apart', async () => {
+  assert.strictEqual((await describeAs(UA.chrome, false)).name, 'Chrome');
+  assert.strictEqual((await describeAs(UA.edge, false)).name, 'Edge');
+  assert.strictEqual((await describeAs(UA.opera, false)).name, 'Opera');
+});
+
+test('a browser with no isBrave hook is not mistaken for Brave', async () => {
+  const info = await describeAs(UA.chrome);
+  assert.strictEqual(info.name, 'Chrome');
+  assert.ok(info.isChrome);
+  assert.ok(!info.isOtherChromium);
+});
+
+test('a Chrome older than 138 is flagged as too old', async () => {
+  const info = await describeAs(UA.oldChrome, false);
+  assert.strictEqual(info.name, 'Chrome');
+  assert.ok(info.tooOld);
+  assert.strictEqual(info.major, 130);
+});
+
+test('a current Chrome is not flagged as too old', async () => {
+  assert.ok(!(await describeAs(UA.chrome, false)).tooOld);
+});
+
+test('Edge is versioned by its own number, not Chromium’s', async () => {
+  const info = await describeAs(UA.edge, false);
+  assert.strictEqual(info.version, '156.0.0.0');
+  assert.ok(!info.tooOld);
+});
+
+test('the explanation names the browser and matches the reason', () => {
+  const t = (key, fallback, subs) => HUEN.t(key, fallback, subs);
+
+  const fork = HUEN.browser.explainMissingApi(
+    { name: 'Brave', version: '156', isOtherChromium: true, tooOld: false }, t);
+  assert.match(fork, /^Brave does not provide/);
+
+  const old = HUEN.browser.explainMissingApi(
+    { name: 'Chrome', version: '130', isOtherChromium: false, tooOld: true }, t);
+  assert.match(old, /Chrome 130/);
+  assert.match(old, /too old/);
+
+  const puzzling = HUEN.browser.explainMissingApi(
+    { name: 'Chrome', version: '156', isOtherChromium: false, tooOld: false }, t);
+  assert.match(puzzling, /chrome:\/\/flags/);
+
+  // Whatever the case, the reader is told which browser they are in.
+  for (const text of [fork, old, puzzling]) {
+    assert.ok(!text.includes('$1'), 'a placeholder was left unsubstituted');
+    assert.ok(!text.includes('$2'), 'a placeholder was left unsubstituted');
+  }
 });

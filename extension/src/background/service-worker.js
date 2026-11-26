@@ -9,12 +9,27 @@ importScripts(
   '/src/shared/namespace.js',
   '/src/shared/protocol.js',
   '/src/shared/settings.js',
+  '/src/shared/languages.js',
+  '/src/background/cloud.js',
   '/src/background/cache.js',
   '/src/background/offscreen-host.js'
 );
 
 const HUEN = globalThis.HUEN;
-const { MSG, cache, offscreenHost, statusInfo, sendToTab, t } = HUEN;
+const { MSG, ERR, cache, cloud, offscreenHost, statusInfo, sendToTab, t } = HUEN;
+
+/* Which translator a given page should use.
+
+   The content script asks before it starts, because the answer decides
+   whether it talks to the browser's own model directly or routes every
+   batch through here. Only this context ever sees the API key. */
+function chooseEngine(settings, builtinAvailable) {
+  const configured = cloud.isConfigured(settings);
+  if (settings.engine === 'cloud') return configured ? 'cloud' : 'cloud-unconfigured';
+  if (settings.engine === 'builtin') return 'builtin';
+  if (builtinAvailable) return 'builtin';
+  return configured ? 'cloud' : 'builtin';
+}
 
 /* ---------- settings ---------- */
 
@@ -85,12 +100,61 @@ HUEN.serve({
     return { ok: true, removed: await cache.clear() };
   },
 
-  [MSG.TRANSLATE]: function (message) {
-    return offscreenHost.translate(message.texts, message.source, message.target);
+  [MSG.GET_ENGINE]: async function (message) {
+    const settings = await getSettings();
+    return { engine: chooseEngine(settings, !!message.builtinAvailable) };
   },
 
-  [MSG.ENSURE_MODEL]: function (message) {
+  [MSG.TRANSLATE]: async function (message) {
+    const settings = await getSettings();
+    if (chooseEngine(settings, false) !== 'cloud') {
+      return offscreenHost.translate(message.texts, message.source, message.target);
+    }
+    try {
+      const results = await cloud.translateMany(
+        settings, message.texts || [], message.source, message.target);
+      return { ok: true, results };
+    } catch (err) {
+      return {
+        ok: false,
+        code: (err && err.code) || ERR.CLOUD_FAILED,
+        error: (err && err.message) || String(err),
+      };
+    }
+  },
+
+  [MSG.ENSURE_MODEL]: async function (message) {
+    const settings = await getSettings();
+    const choice = chooseEngine(settings, false);
+    if (choice === 'cloud-unconfigured') {
+      return {
+        ok: false,
+        code: ERR.CLOUD_UNCONFIGURED,
+        error: t('errorCloudUnconfigured',
+          'No translation service is set up yet. Add one in the extension settings.'),
+      };
+    }
+    // A cloud provider has nothing to download, so it is ready as soon
+    // as it is configured.
+    if (choice === 'cloud') return { ok: true, engine: 'cloud' };
     return offscreenHost.ensureModel(message.source, message.target);
+  },
+
+  /* Used by the options page's "Test" button, so the reader finds out the
+     key is wrong there rather than on a page they wanted to read. */
+  [MSG.TEST_CLOUD]: async function (message) {
+    const settings = HUEN.normalizeSettings(
+      Object.assign({}, await getSettings(), message.patch || {}));
+    if (!cloud.isConfigured(settings)) {
+      return { ok: false, error: t('cloudTestNoKey', 'No API key set.') };
+    }
+    try {
+      const results = await cloud.translateMany(
+        settings, ['Jó napot kívánok!'], 'hu', 'en');
+      return { ok: true, sample: (results[0] && results[0].text) || '' };
+    } catch (err) {
+      return { ok: false, error: (err && err.message) || String(err) };
+    }
   },
 
   [MSG.REPORT_STATUS]: function (message, sender) {

@@ -84,6 +84,81 @@
     </section>
 
     <section class="section">
+      <h2 class="label" data-i18n="optionsTranslator">Translator</h2>
+      <div class="section__body">
+        <div class="field">
+          <label for="engine" data-i18n="optionsEngine">Translate with</label>
+          <select id="engine" class="input medium">
+            <option value="auto" data-i18n="engineAuto">The browser, or a service if it cannot</option>
+            <option value="builtin" data-i18n="engineBuiltinOnly">Only the browser's own model</option>
+            <option value="cloud" data-i18n="engineCloudOnly">Only a translation service</option>
+          </select>
+          <p class="hint" data-i18n="optionsEngineHint">
+            Chrome 138+ and Edge 148+ have a translation model built in: free,
+            offline, and nothing leaves your machine. Other browsers do not,
+            and a service fills the gap there. A service also translates better
+            than the built-in model, at the cost of sending page text to it.
+          </p>
+        </div>
+
+        <div id="cloud-fields">
+          <div class="field">
+            <label for="cloudProvider" data-i18n="optionsProvider">Service</label>
+            <select id="cloudProvider" class="input medium">
+              <option value="deepl">DeepL</option>
+              <option value="openai" data-i18n="providerOpenai">OpenAI-compatible model</option>
+            </select>
+            <p class="hint" id="provider-hint"></p>
+          </div>
+
+          <div class="field">
+            <label for="cloudApiKey" data-i18n="optionsApiKey">API key</label>
+            <input id="cloudApiKey" class="input" type="password" spellcheck="false"
+              autocomplete="off" placeholder="••••••••">
+            <p class="hint" data-i18n="optionsApiKeyHint">
+              Kept in this browser profile and used only by the extension's
+              background page. It is never given to a web page, and never sent
+              anywhere except the service you chose.
+            </p>
+          </div>
+
+          <div id="openai-fields">
+            <div class="pair">
+              <div class="field">
+                <label for="cloudBaseUrl" data-i18n="optionsBaseUrl">Endpoint</label>
+                <input id="cloudBaseUrl" class="input" type="url" spellcheck="false"
+                  placeholder="https://api.openai.com/v1">
+              </div>
+              <div class="field">
+                <label for="cloudModel" data-i18n="optionsModel">Model</label>
+                <input id="cloudModel" class="input" type="text" spellcheck="false"
+                  placeholder="gpt-4o-mini">
+              </div>
+            </div>
+            <p class="hint" data-i18n="optionsOpenaiHint">
+              Anything speaking the OpenAI chat-completions protocol works:
+              OpenAI, Groq, Together, OpenRouter, or a local Ollama or LM Studio
+              server at http://localhost:11434/v1, which needs no key and keeps
+              everything on your machine.
+            </p>
+          </div>
+
+          <div class="row row--spaced">
+            <button id="test-cloud" class="btn" type="button"
+              data-i18n="optionsTestCloud">Test the connection</button>
+            <span id="cloud-test-result" class="hint"></span>
+          </div>
+
+          <p class="notice-inline" id="cloud-privacy" data-i18n="optionsCloudPrivacy">
+            While a service is in use, the text of the pages you translate is
+            sent to it. That is the trade for better translation, and it is why
+            the built-in model is preferred whenever it is available.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
       <h2 class="label" data-i18n="optionsLanguages">Languages</h2>
       <div class="section__body">
         <label class="switch">
@@ -156,7 +231,7 @@
         <div class="row row--spaced">
           <button id="reset" class="btn" type="button"
             data-i18n="optionsReset">Reset every setting</button>
-          <span class="hint" data-i18n="optionsResetHint">Site lists and glossary included. Remembered phrases are kept.</span>
+          <span class="hint" data-i18n="optionsResetHint">Site lists, glossary and API key included. Remembered phrases are kept.</span>
         </div>
       </div>
     </section>
@@ -180,6 +255,7 @@
   <script src="../shared/languages.js"></script>
   <script src="../shared/hash.js"></script>
   <script src="../shared/glossary.js"></script>
+  <script src="../shared/browser.js"></script>
   <script src="../shared/engine.js"></script>
   <script src="i18n.js"></script>
   <script src="options.js"></script>

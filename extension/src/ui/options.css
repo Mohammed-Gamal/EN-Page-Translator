@@ -124,6 +124,30 @@ body {
   margin-top: 16px;
 }
 
+/* A standing consequence of a setting, not an error: present but quiet. */
+.notice-inline {
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  background: var(--warn-wash);
+  border: 1px solid color-mix(in srgb, var(--warn) 24%, transparent);
+  border-radius: var(--radius);
+}
+
+/* The service fields are a block that appears under the engine choice, so
+   they need the same separation a sibling field would get. */
+#cloud-fields,
+#openai-fields {
+  margin-top: 18px;
+}
+
+#cloud-fields[hidden],
+#openai-fields[hidden] {
+  display: none;
+}
+
 .row--spaced {
   margin-top: 16px;
 }

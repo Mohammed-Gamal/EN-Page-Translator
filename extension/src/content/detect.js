@@ -69,14 +69,23 @@
     const target = languages.base(settings.targetLanguage);
     const configured = languages.base(settings.sourceLanguage);
     const auto = !!settings.autoDetectSource;
-    const declared = languages.base(document.documentElement.getAttribute('lang') || '');
+    const declaredRaw = document.documentElement.getAttribute('lang') || '';
+    const declared = languages.base(declaredRaw);
+    /* A document can declare anything, and plenty declare something the
+       translator has no model for: "zxx" (the code for "no linguistic
+       content", which reCAPTCHA and consent iframes use), "und", "mul",
+       "x-default", or simply a typo. Taking such a code at face value and
+       asking for a zxx-to-English translator fails hard on a frame that
+       was never going to need translating, so an unrecognised code counts
+       as no declaration at all and the other signals decide. */
+    const declaredUsable = !!declared && languages.isKnown(declared);
 
     const sample = samplePageText(SAMPLE_CHARS);
     const score = sample ? lang.hungarianScore(sample) : 0;
 
     /* 1. The page says what it is. Believe it, unless it claims to be the
           target language and the text argues otherwise. */
-    if (declared && declared !== target) {
+    if (declaredUsable && declared !== target) {
       if (auto || declared === configured) {
         return verdict({
           translate: true,
@@ -87,7 +96,7 @@
       }
     }
 
-    if (declared === target && score < OVERRIDE_DECLARED) {
+    if (declaredUsable && declared === target && score < OVERRIDE_DECLARED) {
       return verdict({
         score,
         reason: 'the page declares lang="' + declared + '"',

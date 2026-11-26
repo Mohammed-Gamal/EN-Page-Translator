@@ -6,7 +6,21 @@
 (function (HUEN) {
   'use strict';
 
-  const { engine, languages, MSG, sendMessage, t } = HUEN;
+  const { engine, browser, languages, MSG, sendMessage, t } = HUEN;
+
+  const TEXT_FIELDS = ['cloudApiKey', 'cloudBaseUrl', 'cloudModel'];
+  const CHOICES = ['mode', 'engine', 'cloudProvider'];
+
+  const PROVIDER_HINT = {
+    deepl: ['providerDeeplHint',
+      'Good on Hungarian and fast. The free tier covers 500,000 characters '
+      + 'a month; a key from deepl.com ending in :fx is a free one and is '
+      + 'detected automatically.'],
+    openai: ['providerOpenaiHint',
+      'The only option that reads like a person wrote it, because the model '
+      + 'can be told about register and idiom. Slower and it costs per page, '
+      + 'unless you point it at a model running on your own machine.'],
+  };
 
   const SWITCHES = [
     'translateAttributes', 'translateTitle', 'showOriginalOnHover', 'cacheEnabled',
@@ -55,7 +69,9 @@
   }
 
   function writeForm(settings) {
-    $('mode').value = settings.mode;
+    for (const id of CHOICES) $(id).value = settings[id];
+    for (const id of TEXT_FIELDS) $(id).value = settings[id] || '';
+    reflectEngine();
     $('minScore').value = settings.minScore;
     $('minScore-out').textContent = Number(settings.minScore).toFixed(2);
     $('allowlist').value = settings.allowlist.join('\n');
@@ -66,6 +82,16 @@
     fillLanguages($('sourceLanguage'), settings.sourceLanguage);
     fillLanguages($('targetLanguage'), settings.targetLanguage);
     reflectAutoDetect();
+  }
+
+  /* Only show the service fields when a service can actually be used, and
+     only show the endpoint and model when the provider has them. */
+  function reflectEngine() {
+    const usesCloud = $('engine').value !== 'builtin';
+    $('cloud-fields').hidden = !usesCloud;
+    $('openai-fields').hidden = $('cloudProvider').value !== 'openai';
+    const hint = PROVIDER_HINT[$('cloudProvider').value];
+    $('provider-hint').textContent = hint ? t(hint[0], hint[1]) : '';
   }
 
   /* With detection on, the "From" menu is a fallback rather than the
@@ -82,6 +108,11 @@
      allowlist does not read as a change. */
   function readForm() {
     const patch = {
+      engine: $('engine').value,
+      cloudProvider: $('cloudProvider').value,
+      cloudApiKey: $('cloudApiKey').value.trim(),
+      cloudBaseUrl: $('cloudBaseUrl').value.trim(),
+      cloudModel: $('cloudModel').value.trim(),
       mode: $('mode').value,
       minScore: Number($('minScore').value),
       allowlist: parseList($('allowlist').value),
@@ -186,11 +217,12 @@
     const list = $('diag');
     list.textContent = '';
 
-    const ua = navigator.userAgent;
-    const edge = (/Edg\/([\d.]+)/.exec(ua) || [])[1];
-    const chrome_ = (/Chrom(?:e|ium)\/([\d.]+)/.exec(ua) || [])[1];
-    diagRow(list, t('diagBrowser', 'Browser'),
-      edge ? 'Edge ' + edge : 'Chrome ' + (chrome_ || 'unknown'));
+    /* Not parsed from the user agent alone: Brave, Opera and Vivaldi all
+       claim to be Chrome in it, and which one this is happens to be the
+       answer to "why is there no Translator API here?". */
+    const info = await browser.describe();
+    diagRow(list, t('diagBrowser', 'Browser'), info.name + ' ' + info.version,
+      info.isOtherChromium || info.tooOld ? 'warn' : null);
 
     const supported = engine.isSupported();
     diagRow(list, 'Translator API', supported ? 'present' : 'missing',
@@ -225,12 +257,7 @@
       return;
     }
     note.hidden = false;
-    note.textContent =
-      'The built-in Translator needs desktop Chrome 138+ or Edge 148+, and does ' +
-      'not exist on mobile at all. If your browser is new enough but the API is ' +
-      'still missing, check that the built-in AI flags are enabled at ' +
-      'chrome://flags and that the drive holding your browser profile has room ' +
-      'for the model.';
+    note.textContent = browser.explainMissingApi(info, t);
   }
 
   /* ---------- wiring ---------- */
@@ -249,6 +276,33 @@
   });
 
   $('autoDetectSource').addEventListener('change', reflectAutoDetect);
+  $('engine').addEventListener('change', reflectEngine);
+  $('cloudProvider').addEventListener('change', reflectEngine);
+
+  /* Tested with what is on screen, not with what was last saved, so the
+     reader can check a key before committing to it. */
+  $('test-cloud').addEventListener('click', async function () {
+    const node = $('cloud-test-result');
+    $('test-cloud').disabled = true;
+    node.textContent = t('cloudTesting', 'Testing\u2026');
+    const res = await sendMessage({
+      type: MSG.TEST_CLOUD,
+      patch: {
+        cloudProvider: $('cloudProvider').value,
+        cloudApiKey: $('cloudApiKey').value.trim(),
+        cloudBaseUrl: $('cloudBaseUrl').value.trim(),
+        cloudModel: $('cloudModel').value.trim(),
+      },
+    });
+    $('test-cloud').disabled = false;
+    if (res && res.ok) {
+      node.textContent = t('cloudTestOk', 'Works \u2014 \u201cJ\u00f3 napot k\u00edv\u00e1nok!\u201d came back as \u201c$1\u201d',
+        [res.sample]);
+    } else {
+      node.textContent = t('cloudTestFailed', 'Failed: $1',
+        [(res && res.error) || 'no answer']);
+    }
+  });
 
   document.addEventListener('input', refreshSaveBar);
   document.addEventListener('change', refreshSaveBar);
