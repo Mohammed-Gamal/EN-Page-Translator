@@ -85,6 +85,54 @@ test('a free DeepL key goes to the free host, a pro key to the pro host', async 
   assert.match(pro.calls[0].url, /^https:\/\/api\.deepl\.com/);
 });
 
+/* The suffix rule is DeepL's convention, not a guarantee, and a key on the
+   wrong host comes back 403 — the same status as a genuinely bad key, with a
+   body that does not mention the host. Telling somebody their brand-new key
+   is invalid when it is merely on the other plan's host is the failure worth
+   preventing, so the other host is tried before anybody is told that. */
+test('a key refused by the guessed host is retried against the other one', async () => {
+  const { HUEN, calls } = load(function (url) {
+    if (/api\.deepl\.com/.test(url)) return reply(403, { message: 'Forbidden' });
+    return reply(200, { translations: [{ text: 'Good day!' }] });
+  });
+
+  // No :fx, so the pro host is tried first and refuses it.
+  const out = await HUEN.cloud.translateMany(
+    settings(HUEN, { cloudProvider: 'deepl', cloudApiKey: 'no-suffix-key' }),
+    ['Jó napot kívánok!'], 'hu', 'en');
+
+  // Field by field: these objects come from the sandbox, so they are not
+  // reference-equal to anything built out here.
+  assert.strictEqual(out.length, 1);
+  assert.strictEqual(out[0].ok, true);
+  assert.strictEqual(out[0].text, 'Good day!');
+  assert.strictEqual(calls.length, 2, 'exactly one retry, on the other host');
+  assert.match(calls[0].url, /^https:\/\/api\.deepl\.com/);
+  assert.match(calls[1].url, /api-free\.deepl\.com/);
+});
+
+test('a key both DeepL hosts refuse is reported as a rejected key', async () => {
+  const { HUEN, calls } = load(() => reply(403, { message: 'Forbidden' }));
+  await assert.rejects(
+    () => HUEN.cloud.translateMany(
+      settings(HUEN, { cloudProvider: 'deepl', cloudApiKey: 'rubbish:fx' }), ['a'], 'hu', 'en'),
+    (err) => err.code === HUEN.ERR.CLOUD_AUTH);
+  assert.strictEqual(calls.length, 2, 'both hosts tried, then it gives up');
+});
+
+test('an endpoint the reader typed in is never second-guessed', async () => {
+  const { HUEN, calls } = load(() => reply(403, { message: 'Forbidden' }));
+  await assert.rejects(
+    () => HUEN.cloud.translateMany(
+      settings(HUEN, {
+        cloudProvider: 'deepl',
+        cloudApiKey: 'abc:fx',
+        cloudBaseUrl: 'https://proxy.example/v2',
+      }), ['a'], 'hu', 'en'),
+    (err) => err.code === HUEN.ERR.CLOUD_AUTH);
+  assert.strictEqual(calls.length, 1, 'no guessing at a host the reader chose');
+});
+
 test('an explicit endpoint overrides the host DeepL would be given', async () => {
   const { HUEN, calls } = load(() => reply(200, { translations: [{ text: 'x' }] }));
   await HUEN.cloud.translateMany(

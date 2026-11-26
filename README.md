@@ -228,7 +228,7 @@ Three ways to translate, chosen under **All settings → Translator**.
 | | Cost | Setup | Browsers | Quality |
 |---|---|---|---|---|
 | The browser's own model *(default)* | free | none | Chrome 138+, Edge 148+ | NMT, about Google Translate |
-| DeepL | free tier: 500k characters a month | an API key | all | better than the built-in model on Hungarian |
+| DeepL | a free API plan, allowance set by DeepL | an API key | all | better than the built-in model on Hungarian |
 | An OpenAI-compatible model | pay per use, or free on your own hardware | a key, or a local server | all | the only one that reads as a native speaker would write |
 
 `auto`, the default, uses the browser's own model wherever it exists and falls

@@ -13,9 +13,14 @@
 
   const PROVIDER_HINT = {
     deepl: ['providerDeeplHint',
-      'Good on Hungarian and fast. The free tier covers 500,000 characters '
-      + 'a month; a key from deepl.com ending in :fx is a free one and is '
-      + 'detected automatically.'],
+      /* No figure here on purpose: DeepL sets the free allowance, has changed
+         it before, and its own pages do not agree with the number this hint
+         used to quote. Pointing at the source beats being confidently
+         out of date in the UI. */
+      'Good on Hungarian and fast. There is a free API plan, but DeepL sets '
+      + 'its own allowance and has changed it before, so check their pricing '
+      + 'page for what it is today. A key ending in :fx belongs to the free '
+      + 'plan and is detected automatically.'],
     openai: ['providerOpenaiHint',
       'The only option that reads like a person wrote it, because the model '
       + 'can be told about register and idiom. Slower and it costs per page, '

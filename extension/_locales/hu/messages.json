@@ -394,7 +394,7 @@
     "message": "OpenAI-kompatibilis modell"
   },
   "providerDeeplHint": {
-    "message": "Jó magyarból és gyors. Az ingyenes csomag havi 500 000 karaktert fed le; a deepl.com-ról származó, :fx végű kulcs ingyenes, és a kiegészítő magától felismeri."
+    "message": "Jó magyarból és gyors. Van ingyenes API-csomag, de a keretet a DeepL szabja meg és már változtatott rajta, ezért az aktuális értéket az ő áras oldalukon nézd meg. A :fx végű kulcs az ingyenes csomaghoz tartozik, és a kiegészítő magától felismeri."
   },
   "providerOpenaiHint": {
     "message": "Az egyetlen olyan lehetőség, amely úgy olvasható, mintha ember írta volna, mert a modellnek megmondható a stílus és a szóhasználat. Lassabb, és oldalanként fizetni kell érte, hacsak nem a saját gépeden futó modellre mutatsz vele."

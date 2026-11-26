@@ -109,12 +109,41 @@
 
   /* ---------- DeepL ---------- */
 
-  /* A free key ends in ":fx" and must go to a different host; sending it to
-     the pro host returns 403, which looks like a bad key. */
+  /* DeepL runs the two plans on two hosts and rejects a key sent to the wrong
+     one with 403 — which is the same status as a genuinely bad key, and the
+     body does not say the host was the problem. The documented rule is that a
+     Free key ends in ":fx" and belongs to api-free.deepl.com, while anything
+     else belongs to api.deepl.com.
+
+     That rule is DeepL's convention rather than a promise, and getting it
+     wrong tells somebody their brand-new key is invalid when it is not. So the
+     suffix picks which host to try first, and the other one is tried before
+     anybody is told their key was rejected. An endpoint the reader typed in
+     themselves is an instruction, not a guess, and is never second-guessed. */
   function deeplBase(settings) {
-    if (settings.cloudBaseUrl) return settings.cloudBaseUrl.replace(/\/+$/, '');
+    return deeplHosts(settings)[0];
+  }
+
+  function deeplHosts(settings) {
+    if (settings.cloudBaseUrl) return [settings.cloudBaseUrl.replace(/\/+$/, '')];
     const key = settings.cloudApiKey || '';
-    return key.endsWith(':fx') ? DEFAULTS.deepl.free : DEFAULTS.deepl.pro;
+    return key.endsWith(':fx')
+      ? [DEFAULTS.deepl.free, DEFAULTS.deepl.pro]
+      : [DEFAULTS.deepl.pro, DEFAULTS.deepl.free];
+  }
+
+  function isWrongHost(status) {
+    return status === 401 || status === 403;
+  }
+
+  async function deeplTranslations(response, texts) {
+    const data = await response.json();
+    const out = (data && data.translations) || [];
+    if (out.length !== texts.length) {
+      throw tagged(ERR.CLOUD_FAILED,
+        'DeepL returned ' + out.length + ' translations for ' + texts.length + ' strings.');
+    }
+    return out.map(function (entry) { return String(entry.text || ''); });
   }
 
   async function translateWithDeepl(settings, texts, source, target) {
@@ -127,7 +156,7 @@
       return head.concat(tail);
     }
 
-    const response = await request(deeplBase(settings) + '/translate', {
+    const options = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -141,21 +170,26 @@
         tag_handling: null,
         preserve_formatting: true,
       }),
-    });
+    };
 
-    if (!response.ok) {
+    const hosts = deeplHosts(settings);
+    let rejected = null;
+    for (let i = 0; i < hosts.length; i++) {
+      const response = await request(hosts[i] + '/translate', options);
+      if (response.ok) return deeplTranslations(response, texts);
+
+      if (isWrongHost(response.status) && i + 1 < hosts.length) {
+        // Might be the other plan's host rather than a bad key. Try it.
+        rejected = response.status;
+        continue;
+      }
       throw classify(response.status) ||
         tagged(ERR.CLOUD_FAILED, 'DeepL refused the request (' +
           await failureText(response, settings.cloudApiKey) + ').');
     }
 
-    const data = await response.json();
-    const out = (data && data.translations) || [];
-    if (out.length !== texts.length) {
-      throw tagged(ERR.CLOUD_FAILED,
-        'DeepL returned ' + out.length + ' translations for ' + texts.length + ' strings.');
-    }
-    return out.map(function (entry) { return String(entry.text || ''); });
+    throw classify(rejected) ||
+      tagged(ERR.CLOUD_AUTH, 'DeepL rejected the API key.');
   }
 
   /* ---------- OpenAI-compatible chat completions ---------- */
